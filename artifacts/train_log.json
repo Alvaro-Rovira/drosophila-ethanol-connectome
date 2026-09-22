@@ -3,66 +3,73 @@
   {
    "ronda": 0,
    "beta_experto": 1.0,
-   "lambda": 1e-05,
+   "lambda": 0.0001,
    "muestras": 36000,
-   "alcance_lazo_cerrado": 0.875,
-   "t_medio": 12.2,
-   "segundos": 27
+   "alcance_lazo_cerrado": 0.5,
+   "vueltas_sobre_si_con_etanol": 0.0,
+   "t_medio": 20.0,
+   "segundos": 46
   },
   {
    "ronda": 1,
    "beta_experto": 0.5,
    "lambda": 1e-06,
    "muestras": 72000,
-   "alcance_lazo_cerrado": 0.917,
-   "t_medio": 11.5,
-   "segundos": 56
+   "alcance_lazo_cerrado": 0.625,
+   "vueltas_sobre_si_con_etanol": 0.0,
+   "t_medio": 17.3,
+   "segundos": 107
   },
   {
    "ronda": 2,
    "beta_experto": 0.25,
-   "lambda": 1e-05,
+   "lambda": 1e-06,
    "muestras": 108000,
-   "alcance_lazo_cerrado": 0.917,
-   "t_medio": 11.2,
-   "segundos": 84
+   "alcance_lazo_cerrado": 0.5,
+   "vueltas_sobre_si_con_etanol": 0.0,
+   "t_medio": 18.8,
+   "segundos": 174
   },
   {
    "ronda": 3,
    "beta_experto": 0.125,
    "lambda": 1e-06,
    "muestras": 144000,
-   "alcance_lazo_cerrado": 0.958,
-   "t_medio": 11.2,
-   "segundos": 112
+   "alcance_lazo_cerrado": 0.667,
+   "vueltas_sobre_si_con_etanol": 0.083,
+   "t_medio": 17.6,
+   "segundos": 239
   },
   {
    "ronda": 4,
    "beta_experto": 0.0625,
    "lambda": 1e-05,
    "muestras": 180000,
-   "alcance_lazo_cerrado": 1.0,
-   "t_medio": 11.3,
-   "segundos": 140
+   "alcance_lazo_cerrado": 0.625,
+   "vueltas_sobre_si_con_etanol": 0.083,
+   "t_medio": 17.7,
+   "segundos": 302
   },
   {
    "ronda": 5,
    "beta_experto": 0.03125,
-   "lambda": 1e-05,
+   "lambda": 1e-06,
    "muestras": 216000,
-   "alcance_lazo_cerrado": 0.917,
-   "t_medio": 11.7,
-   "segundos": 168
+   "alcance_lazo_cerrado": 0.708,
+   "vueltas_sobre_si_con_etanol": 0.0,
+   "t_medio": 17.6,
+   "segundos": 364
   },
   {
    "ronda": 6,
    "beta_experto": 0.015625,
    "lambda": 1e-05,
    "muestras": 252000,
-   "alcance_lazo_cerrado": 0.958,
-   "t_medio": 12.1,
-   "segundos": 192
+   "alcance_lazo_cerrado": 0.75,
+   "vueltas_sobre_si_con_etanol": 0.25,
+   "t_medio": 18.1,
+   "segundos": 429
   }
  ],
- "alcance": 1.0
+ "alcance": 0.7083333333333334
 }

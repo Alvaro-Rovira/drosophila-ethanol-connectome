@@ -20,12 +20,18 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from mosca.readout import Readout, feature_index     # noqa: E402
+from mosca.readout import ZCLIP, Readout, design, feature_index, pairing     # noqa: E402
 from mosca.sim import Sim, load_brain                # noqa: E402
 from mosca.world import DT                           # noqa: E402
 
 ART = ROOT / "artifacts"
-LAMBDAS = (1e-6, 1e-5, 1e-4, 1e-3)
+LAMBDAS = (1e-6, 1e-5, 1e-4, 1e-3, 1e-2)
+# Robustness: a linear readout with too little regularisation amplifies activity it never saw in
+# training (the ethanol-modulated network, the MBONs after learning) and pins the steering at its
+# limit: the fly spins in place. It is NOT trained on drunk flies (that would teach it to undo the
+# drug); the regularisation is chosen so that, with ethanol, the steering is not pinned.
+SPIN_S = 1.5          # pinned to the same side this long = a full turn on the spot (5 rad/s)
+DRUNK_VAL = (0.3, 0.5)
 _C = {}
 
 
@@ -33,7 +39,9 @@ def ctx():
     if not _C:
         br = load_brain()
         s = Sim(br, seed=0, readout=None, norms={})
-        _C.update(brain=br, senses=s.senses, feat=feature_index(br, s.senses))
+        feat = feature_index(br, s.senses)
+        gl, gr, ng = pairing(br, feat)
+        _C.update(brain=br, senses=s.senses, feat=feat, pair=(gl, gr, ng))
     return _C
 
 
@@ -43,17 +51,21 @@ def new_sim(seed, readout=None, norms=None):
     return s
 
 
-def episode(seed, beta, model, secs=25.0, collect=True, norms=None):
+def episode(seed, beta, model, secs=25.0, collect=True, norms=None, a=None):
     c = ctx()
-    ro = Readout(c["feat"], *model) if model is not None else None
+    ro = Readout(c["feat"], *model, *c["pair"]) if model is not None else None
     s = new_sim(seed, ro if ro is not None else None, norms)
     if ro is None:
         s.readout = None
     s.teacher = beta if ro is not None else 1.0
+    if a is not None:
+        s.alcohol.freeze(a)
     rng = np.random.default_rng(seed + 99)
-    kinds = ["beer", "wine"]
+    # every substance, alone and mixed: each one smells different (its own glomeruli), and a readout
+    # trained only on beer and wine saturated (spun in place) with the odour of the others
+    kinds = ["beer", "wine", "shot", "tequila", "garrafon"]
     for _ in range(1 + int(rng.integers(0, 3))):
-        s.order(kinds[int(rng.integers(0, 2))], 120, 420)
+        s.order(kinds[int(rng.integers(0, len(kinds)))], 120, 420)
     if rng.random() < 0.35:
         # start right in front of a wall: bumps are rare otherwise, and the readout would never
         # learn what the population does after an antennal touch
@@ -66,10 +78,18 @@ def episode(seed, beta, model, secs=25.0, collect=True, norms=None):
                           (rng.uniform(80, TABLE_W - 80), MARGIN + 6, -math.pi / 2)][side]
         f.th += float(rng.normal(0, 0.3))
     X, Y, R = [], [], []
-    reached, t_reach = False, secs
+    reached, t_reach, sat, ticks = False, secs, 0, 0
+    run, sign, longest = 0, 0.0, 0
     for k in range(int(secs / DT)):
         tick = s.acc + DT >= s.period
         s.step()
+        if tick:
+            ticks += 1
+            sat += abs(s.cmd[0]) > 0.9            # steering pinned at its limit
+            sg = float(np.sign(s.cmd[0])) if abs(s.cmd[0]) > 0.9 else 0.0
+            run = run + 1 if (sg != 0 and sg == sign) else (1 if sg != 0 else 0)
+            sign = sg
+            longest = max(longest, run)
         if tick and collect:
             X.append(s.features(c["feat"]))
             Y.append(s.label)
@@ -78,7 +98,8 @@ def episode(seed, beta, model, secs=25.0, collect=True, norms=None):
         if not reached and s.world.contact_puddle() is not None:
             reached, t_reach = True, (k + 1) * DT
     return (np.asarray(X, np.float32), np.asarray(Y, np.float32),
-            {"reach": float(reached), "t": t_reach}, R)
+            {"reach": float(reached), "t": t_reach, "sat": sat / max(ticks, 1),
+             "spin_s": longest * s.period}, R)
 
 
 def _ep(args):
@@ -105,10 +126,11 @@ def cmd_norms(a):
 def cmd_readout(a):
     norms = json.loads((ART / "norms.json").read_text())
     c = ctx()
-    d = len(c["feat"]) + 1
-    XtX, XtY = np.zeros((d, d)), np.zeros((d, 2))
+    gl, gr, ng = c["pair"]
+    XtX = XtY = VtV = VtY = None
     n, mu, sd, model = 0, None, None, None
-    best, hist, t0 = (None, -1.0), [], time.time()
+    cache: dict = {}
+    best, hist, t0 = (None, -1e9), [], time.time()
     with Pool(a.workers) as pool:
         for rnd in range(a.rounds + 1):
             beta = 0.5 ** rnd
@@ -118,33 +140,40 @@ def cmd_readout(a):
             Y = np.concatenate([o[1] for o in out]).astype(np.float64)
             if mu is None:
                 mu, sd = X.mean(0), X.std(0) + 1e-6
-            Z = np.c_[(X - mu) / sd, np.ones(len(X))]
-            XtX += Z.T @ Z
-            XtY += Z.T @ Y
-            n += len(Z)
+            D, V = design(np.clip((X - mu) / sd, -ZCLIP, ZCLIP), gl, gr, ng, cache)
+            if XtX is None:
+                XtX, XtY = np.zeros((D.shape[1],) * 2), np.zeros(D.shape[1])
+                VtV, VtY = np.zeros((V.shape[1],) * 2), np.zeros(V.shape[1])
+            XtX += D.T @ D
+            XtY += D.T @ Y[:, 0]                   # turn: only from left - right differences
+            VtV += V.T @ V
+            VtY += V.T @ Y[:, 1]                   # speed: from sums and unpaired neurons
+            n += len(D)
             cands = []
             for lam in LAMBDAS:
-                W = np.linalg.solve(XtX + lam * n * np.eye(d), XtY)
-                cands.append((lam, W))
-            # closed loop with the readout alone at the wheel (validation seeds)
+                Wd = np.linalg.solve(XtX + lam * n * np.eye(len(XtX)), XtY)
+                Wv = np.linalg.solve(VtV + lam * n * np.eye(len(VtV)), VtY)
+                cands.append((lam, Wd, Wv))
             scores = []
-            for lam, W in cands:
-                m = (mu, sd, W)
+            for lam, Wd, Wv in cands:
+                m = (mu, sd, Wd, Wv)
                 res = pool.map(_ep, [(2000 + i, 0.0, m, 25.0, False, norms) for i in range(a.val)])
-                scores.append((float(np.mean([r[2]["reach"] for r in res])),
-                               float(np.mean([r[2]["t"] for r in res])), lam, W))
+                drunk = pool.map(_ep, [(2500 + i, 0.0, m, 20.0, False, norms, DRUNK_VAL[i % 2])
+                                       for i in range(a.val // 2)])
+                reach = float(np.mean([r[2]["reach"] for r in res]))
+                sat = float(np.mean([r[2]["spin_s"] > SPIN_S for r in drunk]))    # episodes that spin
+                score = reach - sat
+                scores.append((score, float(np.mean([r[2]["t"] for r in res])), lam, m, reach, sat))
             scores.sort(key=lambda s: (-s[0], s[1]))
-            reach, t_mean, lam, W = scores[0]
-            model = (mu, sd, W)
+            score, t_mean, lam, model, reach, sat = scores[0]
             row = {"ronda": rnd, "beta_experto": beta, "lambda": lam, "muestras": n,
-                   "alcance_lazo_cerrado": round(reach, 3), "t_medio": round(t_mean, 1),
-                   "segundos": round(time.time() - t0)}
+                   "alcance_lazo_cerrado": round(reach, 3), "vueltas_sobre_si_con_etanol": round(sat, 3),
+                   "t_medio": round(t_mean, 1), "segundos": round(time.time() - t0)}
             hist.append(row)
             print(json.dumps(row), flush=True)
-            if reach > best[1]:
-                best = (model, reach)
-    mu, sd, W = best[0]
-    Readout(c["feat"], mu, sd, W).save(ART / "readout.npz")
+            if score > best[1]:
+                best = (model, score)
+    Readout(c["feat"], *best[0], gl, gr, ng).save(ART / "readout.npz")
     (ART / "train_log.json").write_text(json.dumps({"historial": hist, "alcance": best[1]}, indent=1))
     print("-> artifacts/readout.npz · alcance en lazo cerrado", best[1])
 

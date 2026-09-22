@@ -142,7 +142,8 @@
       por debajo durante 0,3 s, caída; sin recuperación durante 3 s, pérdida del reflejo de enderezamiento (LORR).</li>
       <li><b>Locomoción</b>: rumbo y paso de una lectura lineal sobre 1.536 neuronas (descendentes, neuronas de
       proyección del lóbulo antenal, MBON y otras centrales) que no reciben la entrada directa; única pieza
-      entrenada, por imitación de un controlador que solo ve lo que ven los sentidos.</li>
+      entrenada, por imitación de un controlador que solo ve lo que ven los sentidos. Es simétrica: el giro
+      sale solo de diferencias izquierda − derecha entre neuronas homólogas, con adaptación lenta (τ = 3 s).</li>
     </ul>
     <p>Los umbrales se colocan entre dos respuestas neuronales medidas en el sujeto sobrio, no a mano.</p>
 
@@ -160,14 +161,14 @@
     <h3>Resultados principales</h3>
     <table class="res mono">
       <tr><th>Nivel</th><th>Velocidad</th><th>Tono patas</th><th>En el suelo</th><th>LORR</th></tr>
-      <tr><td>0</td><td>34,9</td><td>1,07</td><td>0 %</td><td>0 %</td></tr>
-      <tr><td>0,45</td><td>52,8</td><td>–</td><td>0 %</td><td>0 %</td></tr>
-      <tr><td>0,6</td><td>50,1</td><td>0,73</td><td>0 %</td><td>0 %</td></tr>
-      <tr><td>0,75</td><td>1,5</td><td>0,19</td><td>95 %</td><td>88 %</td></tr>
+      <tr><td>0</td><td>37,6</td><td>1,01</td><td>0 %</td><td>0 %</td></tr>
+      <tr><td>0,3</td><td>64,3</td><td>1,00</td><td>0 %</td><td>0 %</td></tr>
+      <tr><td>0,6</td><td>48,5</td><td>0,76</td><td>0 %</td><td>0 %</td></tr>
+      <tr><td>0,75</td><td>1,4</td><td>0,17</td><td>96 %</td><td>89 %</td></tr>
     </table>
-    <p>Control con cableado permutado (mismos grados, pesos y signos): la búsqueda de alimento cae de 100 % a 0 %,
-    el rechazo del garrafón de 100 % a 0 % y la marcha atrás ante la pared de 100 % a 0 %. Escape y aceptación de
-    la cerveza no cambian. Una mosca saciada no bebe cerveza (0 s frente a 5,7 s hambrienta), por eso la sedación
+    <p>Control con cableado permutado (mismos grados, pesos y signos): la búsqueda de alimento cae de 95 % a 0 % y
+    el rechazo del garrafón de 100 % a 0 %. Escape, aceptación de la cerveza y marcha atrás ante la pared no
+    cambian. Una mosca saciada no bebe cerveza (0 s frente a 5,7 s hambrienta), por eso la sedación
     se estudia con vapor.</p>
 
     <h3>Limitaciones</h3>

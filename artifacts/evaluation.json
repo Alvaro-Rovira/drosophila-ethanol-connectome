@@ -1,12 +1,12 @@
 {
  "test_real": {
   "n": 40,
-  "alcance": 1.0,
+  "alcance": 0.95,
   "acepta_cerveza": 1.0,
   "rechaza_garrafon": 1.0,
   "marcha_atras": 1.0,
   "escape": 1.0,
-  "anda": 0.887,
+  "anda": 0.879,
   "bloqueo_max_s": 0.3,
   "caidas_sobria": 0.0
  },
@@ -15,10 +15,10 @@
   "alcance": 0.0,
   "acepta_cerveza": 1.0,
   "rechaza_garrafon": 0.0,
-  "marcha_atras": 0.0,
+  "marcha_atras": 1.0,
   "escape": 1.0,
-  "anda": 0.998,
-  "bloqueo_max_s": 0.067,
+  "anda": 0.939,
+  "bloqueo_max_s": 0.433,
   "caidas_sobria": 0.0
  },
  "validacion_real": {
@@ -28,7 +28,7 @@
   "rechaza_garrafon": 1.0,
   "marcha_atras": 1.0,
   "escape": 1.0,
-  "anda": 0.89,
+  "anda": 0.895,
   "bloqueo_max_s": 0.3,
   "caidas_sobria": 0.0
  },
@@ -37,10 +37,10 @@
   "alcance": 0.0,
   "acepta_cerveza": 1.0,
   "rechaza_garrafon": 0.0,
-  "marcha_atras": 0.0,
+  "marcha_atras": 1.0,
   "escape": 1.0,
-  "anda": 0.998,
-  "bloqueo_max_s": 0.067,
+  "anda": 0.938,
+  "bloqueo_max_s": 0.3,
   "caidas_sobria": 0.0
  },
  "extra": {
@@ -51,15 +51,15 @@
    "0.0": 0.0
   },
   "alimentacion_libre": {
-   "sip_s_0_60": 13.91,
-   "sip_s_60_120": 2.25,
-   "hunger_end": 0.0
+   "sip_s_0_60": 8.12,
+   "sip_s_60_120": 1.73,
+   "hunger_end": 0.01
   },
   "MDN": {
-   "reposo_antes_del_choque": 0.98,
-   "pico_tras_el_choque": 1.183,
+   "reposo_antes_del_choque": 0.982,
+   "pico_tras_el_choque": 1.184,
    "marcha_atras": 1.0,
-   "marcha_atras_sin_MDN": 1.0
+   "marcha_atras_sin_MDN": 0.312
   },
   "aprendizaje": {
    "cambio_respuesta_MBON_%": {
