@@ -235,42 +235,45 @@ void main(){ vC = aC; gl_Position = uVP * vec4(aP, 1.0); }`;
 
     // ---------------------------------------------------------------- static bar
     const WOOD = [0.35, 0.2, 0.1];
+    let AW = 2160, AH = 1620;                 // arena size, from the server's hello
+    function setArena(w, h) { AW = w; AH = h; cam.tx = AW / 2; cam.tz = AH / 2; }
     function bar() {
-      // counter top (surface at y = 0) and its front edge
-      draw(M.box, chain(T(360, -60, 200), S(5200, 60, 3400)), WOOD, { mat: 1, spec: 0.5 });
+      const cx = AW / 2, cz = AH / 2;
+      // counter top (surface at y = 0)
+      draw(M.box, chain(T(cx, -60, cz - 400), S(AW / 2 + 5000, 60, AH / 2 + 3400)), WOOD, { mat: 1, spec: 0.5 });
       // beer mat under the arena, with a printed border
-      draw(M.box, chain(T(360, MAT_H / 2, 270), S(410, MAT_H / 2, 320)), [0.74, 0.68, 0.56], { mat: 4, spec: 0.05 });
+      draw(M.box, chain(T(cx, MAT_H / 2, cz), S(AW / 2 + 50, MAT_H / 2, AH / 2 + 50)), [0.74, 0.68, 0.56], { mat: 4, spec: 0.05 });
       // pint of beer, at fly scale it towers over the arena
-      const gx = 1450, gz = -120;
+      const gx = AW + 700, gz = AH * 0.25;
       draw(M.tube, chain(T(gx, 0, gz), S(300, 1150, 300)), [0.82, 0.5, 0.1], { alpha: 0.78, spec: 0.6 });
       draw(M.cyl, chain(T(gx, 1150, gz), S(300, 130, 300)), [0.96, 0.93, 0.85], { spec: 0.1 });
       draw(M.glass, chain(T(gx, 0, gz), S(330, 1500, 330)), [0.85, 0.92, 0.95], { alpha: 0.16, spec: 1.2 });
       draw(M.cyl, chain(T(gx, 0.5, gz), S(340, 1, 340)), [0, 0, 0], { alpha: 0.25, mat: 3 });
       // bottle
-      const bx = -760, bz = -420;
+      const bx = -800, bz = -300;
       draw(M.bottle, chain(T(bx, 0, bz), S(290, 2500, 290)), [0.1, 0.3, 0.14], { alpha: 0.9, spec: 1.0 });
       draw(M.tube, chain(T(bx, 700, bz), S(296, 650, 296)), [0.9, 0.84, 0.66], { spec: 0.1 });
       draw(M.cyl, chain(T(bx, 2490, bz), S(105, 60, 105)), [0.75, 0.62, 0.2], { spec: 0.8 });
-      // crown cap, peanuts, napkin
-      draw(M.cyl, chain(T(980, 0, 820), S(140, 30, 140)), [0.7, 0.1, 0.08], { spec: 0.8 });
-      for (const [x, z, r] of [[-160, 760, 0.3], [-60, 840, 1.9], [-230, 900, 1.1], [60, 1010, 2.6]]) {
-        draw(M.sphere, chain(T(x, 30, z), RY(r), S(85, 32, 42)), [0.62, 0.42, 0.24], { spec: 0.15 });
+      // crown cap, peanuts, napkin (outside the arena)
+      draw(M.cyl, chain(T(AW + 420, 0, AH * 0.85), S(140, 30, 140)), [0.7, 0.1, 0.08], { spec: 0.8 });
+      for (const [x, z, r] of [[-260, 0.55, 0.3], [-160, 0.62, 1.9], [-330, 0.7, 1.1], [-120, 0.8, 2.6]]) {
+        draw(M.sphere, chain(T(x, 30, AH * z), RY(r), S(85, 32, 42)), [0.62, 0.42, 0.24], { spec: 0.15 });
       }
-      draw(M.box, chain(T(-980, 3, 900), RY(0.35), S(520, 3, 520)), [0.93, 0.93, 0.9], { spec: 0.02 });
+      draw(M.box, chain(T(-1000, 3, AH + 250), RY(0.35), S(520, 3, 520)), [0.93, 0.93, 0.9], { spec: 0.02 });
       // acrylic arena walls at 30 u (the antennae feel them)
-      const wall = [0.75, 0.88, 1.0], hW = 45;
-      draw(M.box, chain(T(360, MAT_H + hW / 2, 30), S(333, hW / 2, 3)), wall, { alpha: 0.14, spec: 1.4 });
-      draw(M.box, chain(T(360, MAT_H + hW / 2, 510), S(333, hW / 2, 3)), wall, { alpha: 0.14, spec: 1.4 });
-      draw(M.box, chain(T(30, MAT_H + hW / 2, 270), S(3, hW / 2, 243)), wall, { alpha: 0.14, spec: 1.4 });
-      draw(M.box, chain(T(690, MAT_H + hW / 2, 270), S(3, hW / 2, 243)), wall, { alpha: 0.14, spec: 1.4 });
+      const wall = [0.75, 0.88, 1.0], hW = 45, lx = (AW - 60) / 2 + 3, lz = (AH - 60) / 2 + 3;
+      draw(M.box, chain(T(cx, MAT_H + hW / 2, 30), S(lx, hW / 2, 3)), wall, { alpha: 0.14, spec: 1.4 });
+      draw(M.box, chain(T(cx, MAT_H + hW / 2, AH - 30), S(lx, hW / 2, 3)), wall, { alpha: 0.14, spec: 1.4 });
+      draw(M.box, chain(T(30, MAT_H + hW / 2, cz), S(3, hW / 2, lz)), wall, { alpha: 0.14, spec: 1.4 });
+      draw(M.box, chain(T(AW - 30, MAT_H + hW / 2, cz), S(3, hW / 2, lz)), wall, { alpha: 0.14, spec: 1.4 });
       // back bar: wall, shelves and bottles, far away and in the fog
-      draw(M.box, chain(T(360, 3000, -5200), S(9000, 5000, 60)), [0.16, 0.09, 0.05], { mat: 1, spec: 0.1 });
+      draw(M.box, chain(T(cx, 3000, -5200), S(10000, 5000, 60)), [0.16, 0.09, 0.05], { mat: 1, spec: 0.1 });
       const cols = ['#2f6b3a', '#8a5a1c', '#b8b8c8', '#6b1f2a', '#c29a3a', '#2a4f7a', '#7a3b12'];
       for (let s = 0; s < 2; s++) {
         const y = 900 + s * 2600;
-        draw(M.box, chain(T(360, y - 60, -4900), S(7500, 60, 320)), [0.3, 0.17, 0.08], { mat: 1, spec: 0.3 });
-        for (let i = 0; i < 13; i++) {
-          const x = -5600 + i * 930 + (s ? 400 : 0);
+        draw(M.box, chain(T(cx, y - 60, -4900), S(8500, 60, 320)), [0.3, 0.17, 0.08], { mat: 1, spec: 0.3 });
+        for (let i = 0; i < 15; i++) {
+          const x = cx - 6500 + i * 930 + (s ? 400 : 0);
           draw(M.bottle, chain(T(x, y, -4900), S(230, 2100 + ((i * 7 + s * 3) % 5) * 180, 230)), hex(cols[(i + s * 3) % cols.length]), { alpha: 0.92, spec: 0.9 });
         }
       }
@@ -432,14 +435,17 @@ void main(){ vC = aC; gl_Position = uVP * vec4(aP, 1.0); }`;
         });
       }
       g.font = `12px ${MONO}`; g.textBaseline = 'top'; g.textAlign = 'left';
-      g.fillStyle = '#d8d0c4'; g.fillText(`t = ${st.hud.t} s`, 12, 10);
-      g.fillStyle = '#e0a340'; g.fillText(`EtOH = ${st.hud.a}`, 12, 27);
-      g.fillStyle = 'rgba(216,208,196,0.55)'; g.font = `10px ${MONO}`;
-      g.fillText(w < 520 ? 'arrastra · pellizca · doble toque' : 'arrastra: girar · rueda: zoom · doble clic: reiniciar', 12, h - 18);
+      g.fillStyle = 'rgba(15,11,8,0.62)'; g.fillRect(6, 6, 150, 38);
+      g.fillStyle = '#efe6da'; g.fillText(`t = ${st.hud.t} s`, 12, 10);
+      g.fillStyle = '#f0a53a'; g.fillText(`alcohol = ${st.hud.a}`, 12, 27);
+      const hint = w < 520 ? 'arrastra · pellizca · doble toque' : 'arrastra: girar · rueda: zoom · doble clic: reiniciar';
+      g.font = `10px ${MONO}`;
+      g.fillStyle = 'rgba(15,11,8,0.55)'; g.fillRect(6, h - 22, g.measureText(hint).width + 12, 16);
+      g.fillStyle = 'rgba(239,230,218,0.8)'; g.fillText(hint, 12, h - 19);
       if (st.hud.rec) { g.fillStyle = '#e25c5c'; g.textAlign = 'right'; g.font = `12px ${MONO}`; g.fillText('● REC', w - 12, 10); }
     }
 
-    return { render, zoom, cam, reset: () => Object.assign(cam, home) };
+    return { render, zoom, cam, setArena, reset: () => Object.assign(cam, home) };
   }
 
   window.Scene3D = { create };

@@ -50,14 +50,14 @@ narration:
     ko: "Sin fuerza para levantarse: sedada."
     resaca: "Sus neuronas vuelven a la normalidad."
 toasts:
-  ordered: "{who} administra {drink}"
-  bar_full: "Arena completa: máximo 3 gotas a la vez"
-  too_fast: "Espera un momento entre administraciones"
-  reset: "{who} aplica lavado: etanol a 0"
-  demo_on: "{who} inicia el protocolo automático"
-  demo_off: "Protocolo automático finalizado"
-  demo_ko: "Sujeto en LORR: protocolo detenido"
-  vapor: "{who} expone al sujeto a vapor de etanol (20 s)"
+  ordered: "{who} sirve {drink}"
+  bar_full: "La barra está llena: máximo 3 gotas a la vez"
+  too_fast: "Espera un momento antes de servir otra"
+  reset: "{who} aplica un lavado: alcohol a cero"
+  demo_on: "{who} pone en marcha el protocolo automático"
+  demo_off: "Protocolo automático terminado"
+  demo_ko: "La mosca está KO: protocolo detenido"
+  vapor: "{who} suelta vapor de etanol (20 s)"
 articles: {beer: "una", wine: "un", shot: "un", tequila: "un", garrafon: "un"}
 puddle_distance: [100, 300]
 order_min_interval_s: 1.5

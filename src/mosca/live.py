@@ -22,18 +22,18 @@ from .world import DT, TABLE_H, TABLE_W
 N_GROUPS = 12
 # identified neurons recorded live: (key, label, how the L/R pair is combined)
 CHANNELS = [
-    ("MN9", "MN9 · probóscide", "mean"),
-    ("DNp01", "DNp01 (fibra gigante) · escape", "max"),
-    ("MDN", "MDN · marcha atrás", "mean"),
-    ("DNp09", "DNp09 · avance", "mean"),
-    ("DNa02|L", "DNa02 izq. · giro", "one"),
-    ("DNa02|R", "DNa02 der. · giro", "one"),
-    ("MN_leg_T1", "MN pata T1", "mean"),
-    ("MN_leg_T2", "MN pata T2", "mean"),
-    ("MN_leg_T3", "MN pata T3", "mean"),
-    ("MN_wing_power", "MN ala (potencia)", "mean"),
-    ("DNg12", "DNg12 · acicalado", "max"),
-    ("MBON", "MBON · cuerpo fungiforme", "mean"),
+    ("MN9", "Beber · MN9", "mean"),
+    ("DNp01", "Escapar · fibra gigante", "max"),
+    ("MDN", "Marcha atrás · MDN", "mean"),
+    ("DNp09", "Avanzar · DNp09", "mean"),
+    ("DNa02|L", "Girar izq. · DNa02", "one"),
+    ("DNa02|R", "Girar der. · DNa02", "one"),
+    ("MN_leg_T1", "Patas delanteras", "mean"),
+    ("MN_leg_T2", "Patas centrales", "mean"),
+    ("MN_leg_T3", "Patas traseras", "mean"),
+    ("MN_wing_power", "Alas (potencia)", "mean"),
+    ("DNg12", "Acicalarse · DNg12", "max"),
+    ("MBON", "Memoria · MBON", "mean"),
 ]
 N_SCATTER = 1500
 SCATTER_EVERY = 4
@@ -177,7 +177,7 @@ class Live:
                     self.toasts.append(f"Protocolo: vapor de etanol ({secs:.0f} s)")
                 elif self._spawn(kind, demo=True):
                     d = self.drinks[kind]
-                    self.toasts.append(f"Protocolo: {d['name']} ({round(d['abv'] * 100)}% EtOH)")
+                    self.toasts.append(f"Protocolo: {d['name'].lower()} ({round(d['abv'] * 100)} % alcohol)")
                 else:
                     self.demo_queue.appendleft((self.demo_t + 3.0, kind))
                     break

@@ -2,54 +2,54 @@
  "real": [
   {
    "a": 0.0,
-   "velocidad": 37.6,
-   "anda": 0.889,
-   "giro_por_distancia": 0.0362,
+   "velocidad": 49.2,
+   "anda": 0.933,
+   "giro_por_distancia": 0.0203,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
    "alcanza_y_bebe": 0.958
   },
   {
    "a": 0.15,
-   "velocidad": 41.6,
-   "anda": 0.903,
-   "giro_por_distancia": 0.0275,
+   "velocidad": 54.3,
+   "anda": 0.937,
+   "giro_por_distancia": 0.0202,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.875
+   "alcanza_y_bebe": 0.833
   },
   {
    "a": 0.3,
-   "velocidad": 64.3,
-   "anda": 0.893,
-   "giro_por_distancia": 0.0337,
+   "velocidad": 60.1,
+   "anda": 0.767,
+   "giro_por_distancia": 0.0364,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.0
+   "alcanza_y_bebe": 0.542
   },
   {
    "a": 0.45,
-   "velocidad": 57.3,
-   "anda": 0.816,
-   "giro_por_distancia": 0.0345,
+   "velocidad": 65.3,
+   "anda": 0.884,
+   "giro_por_distancia": 0.0277,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.25
+   "alcanza_y_bebe": 0.083
   },
   {
    "a": 0.6,
-   "velocidad": 48.5,
-   "anda": 0.761,
-   "giro_por_distancia": 0.0437,
+   "velocidad": 59.3,
+   "anda": 0.913,
+   "giro_por_distancia": 0.0335,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.125
+   "alcanza_y_bebe": 0.042
   },
   {
    "a": 0.75,
-   "velocidad": 1.4,
+   "velocidad": 1.5,
    "anda": 0.036,
-   "giro_por_distancia": 0.0713,
+   "giro_por_distancia": 0.0479,
    "en_el_suelo": 0.964,
    "sedada": 0.889,
    "alcanza_y_bebe": 0.0
@@ -58,7 +58,7 @@
    "a": 0.9,
    "velocidad": 0.1,
    "anda": 0.006,
-   "giro_por_distancia": 0.0847,
+   "giro_por_distancia": 0.0665,
    "en_el_suelo": 0.993,
    "sedada": 0.917,
    "alcanza_y_bebe": 0.0
@@ -67,7 +67,7 @@
    "a": 1.0,
    "velocidad": 0.1,
    "anda": 0.004,
-   "giro_por_distancia": 0.124,
+   "giro_por_distancia": 0.0782,
    "en_el_suelo": 0.993,
    "sedada": 0.917,
    "alcanza_y_bebe": 0.0

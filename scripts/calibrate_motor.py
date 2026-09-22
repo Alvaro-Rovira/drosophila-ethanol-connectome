@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 from mosca.body import MotorCfg          # noqa: E402
-from mosca.world import DT               # noqa: E402
+from mosca.world import DT, TABLE_H, TABLE_W   # noqa: E402
 import train as T                         # noqa: E402
 
 ART = ROOT / "artifacts"
@@ -33,7 +33,7 @@ def held_on_drop(args):
     seed, kind = args
     norms = json.loads((ART / "norms.json").read_text())
     s = T.new_sim(seed, norms=norms)
-    s.world.place_fly(360, 270, 0.0)
+    s.world.place_fly(TABLE_W / 2, TABLE_H / 2, 0.0)
     p = s.order(kind, 100, 120)
     f = s.world.fly
     p.x, p.y = f.x + 4, f.y

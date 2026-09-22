@@ -23,9 +23,10 @@ conductas dependen de verdad de la topología del conectoma y cuáles no.
 > of the leg motor neurons. Hunger acts as a hormonal gain on the sweet and bitter receptors. Ethanol,
 > taken by drinking or as vapour, acts only on synaptic transmission. Hyperactivity, loss of leg tone,
 > falls and loss of the righting reflex emerge from it. A degree-preserving shuffled connectome
-> abolishes odour-guided foraging (95% → 0%) and bitter rejection (100% → 0%); escape, sugar acceptance
-> and backing away from walls survive the shuffle. The steering readout is bilaterally symmetric (it
-> turns only on left-right differences), after an unconstrained readout made drunk flies spin in place.
+> abolishes odour-guided foraging (95% → 0%), bitter rejection (100% → 0%) and backing away from walls
+> (100% → 0%); escape and sugar acceptance survive the shuffle. The steering readout is bilaterally
+> symmetric (it turns only on left-right differences) and takes the walking speed from the descending
+> neurons only, after an unconstrained readout made drunk flies spin in place or freeze.
 
 ![Consola del experimento](artifacts/screens/consola.png)
 
@@ -69,16 +70,16 @@ paréntesis, la versión anterior de 8.000 neuronas.
 |---|---:|---:|
 | Encontrar una gota por el olor y beber (≤ 25 s) | **95 %** (92,5 %) | **0 %** (0 %) |
 | Rechazar una solución amarga (40 % EtOH con impurezas) | **100 %** (100 %) | **0 %** (0 %) |
-| Retroceder al chocar con el borde | 100 % (100 %) | 100 % (100 %) |
+| Retroceder al chocar con el borde | **100 %** (100 %) | **0 %** (100 %) |
 | Aceptar una solución dulce (5 % EtOH) | 100 % | 100 % |
 | Despegar tras un golpe en la arena | 100 % | 100 % |
 | Caídas estando sobria | 0 % | 0 % |
 
-Dos conductas **desaparecen** al destruir la topología: la búsqueda guiada por el olor y el rechazo del
-amargo. Las otras tres sobreviven a la permutación, así que en este modelo **no son evidencia** de que el
-conectoma importe: les basta con que llegue suficiente corriente al sitio adecuado. (Con el volante
-anterior, la marcha atrás también se perdía al permutar; con el volante simétrico actual, no: ver
-[El fallo de las vueltas sobre sí misma](#el-fallo-de-las-vueltas-sobre-sí-misma).)
+Tres conductas **desaparecen** al destruir la topología: la búsqueda guiada por el olor, el rechazo del
+amargo y la marcha atrás. Las otras dos sobreviven a la permutación, así que en este modelo **no son
+evidencia** de que el conectoma importe: les basta con que llegue suficiente corriente al sitio adecuado.
+La marcha atrás ha pasado por las dos columnas mientras se arreglaba el volante: ver
+[Dos fallos del volante](#dos-fallos-del-volante-vueltas-sobre-sí-misma-y-quedarse-quieta).
 
 ### 2. El etanol, actuando solo sobre las sinapsis, produce la progresión de la intoxicación
 
@@ -86,25 +87,25 @@ Nivel de etanol congelado, 24 moscas por nivel, 40 s cada una (`scripts/evaluate
 
 | Etanol (u.a.) | Velocidad (u/s) | Tono de patas (× sobrio) | En el suelo | LORR | Encuentra y bebe |
 |---:|---:|---:|---:|---:|---:|
-| 0 | 37,6 | 1,01 | 0 % | 0 % | 96 % |
-| 0,15 | 41,6 | – | 0 % | 0 % | 88 % |
-| 0,30 | **64,3** | 1,00 | 0 % | 0 % | 0 % |
-| 0,45 | 57,3 | – | 0 % | 0 % | 25 % |
-| 0,60 | 48,5 | 0,76 | 0 % | 0 % | 13 % |
-| 0,67 | – | 0,58 | – | – | – |
-| 0,70 | – | **0,21** | – | – | – |
-| 0,75 | 1,4 | 0,17 | **96 %** | **89 %** | 0 % |
+| 0 | 49,2 | 0,96 | 0 % | 0 % | 96 % |
+| 0,15 | 54,3 | – | 0 % | 0 % | 83 % |
+| 0,30 | 60,1 | 1,12 | 0 % | 0 % | 54 % |
+| 0,45 | **65,3** | – | 0 % | 0 % | 8 % |
+| 0,60 | 59,3 | 0,76 | 0 % | 0 % | 4 % |
+| 0,67 | – | 0,63 | – | – | – |
+| 0,70 | – | **0,26** | – | – | – |
+| 0,75 | 1,5 | 0,18 | **96 %** | **89 %** | 0 % |
 | 0,90 | 0,1 | – | 99 % | 92 % | 0 % |
 
-- **Estimulación**: la velocidad sube hasta un +71 % a 0,3, como la hiperactividad descrita en moscas
+- **Estimulación**: la velocidad sube hasta un +33 % a 0,45, como la hiperactividad descrita en moscas
   expuestas a etanol (Wolf et al. 2002).
 - **Pérdida de tono y sedación**: el tono de las motoneuronas de las patas baja poco a poco desde 0,5 y
   se hunde entre 0,67 y 0,7. La mosca cae y no consigue enderezarse (LORR), que es la medida estándar
   de sedación en *Drosophila*.
-- **Deterioro de la búsqueda**: encuentra la comida cada vez menos desde 0,3.
+- **Deterioro de la búsqueda**: encuentra la comida cada vez menos desde 0,15 (96 % → 54 % a 0,3 → 4 % a 0,6).
 - **Lo que no aparece**: con 8.000 neuronas, el giro por unidad de distancia se multiplicaba por 2-4
   entre 0,45 y 0,6, y se presentaba como ataxia. Con 20.000 neuronas y el volante simétrico **no
-  aparece** (0,036 → 0,044). Visto el fallo de las vueltas, aquel aumento de giro era probablemente el
+  aparece** (0,020 → 0,034). Visto el fallo de las vueltas, aquel aumento de giro era probablemente el
   mismo artefacto del volante sin simetría y no una ataxia real. No se han retocado las curvas del
   etanol para forzarlo.
 
@@ -114,7 +115,7 @@ Nivel de etanol congelado, 24 moscas por nivel, 40 s cada una (`scripts/evaluate
 |---|---|
 | Sobre una gota de cerveza, hambrienta | 5,7 s de sorbo en 6 s |
 | Sobre una gota de cerveza, saciada | **0 s** |
-| Cerveza ofrecida sin parar durante 2 min | 8,1 s de sorbo el primer minuto, 1,7 s el segundo |
+| Cerveza ofrecida sin parar durante 2 min | 10,0 s de sorbo el primer minuto, 4,1 s el segundo |
 | Protocolo solo con bebidas | la mitad de las moscas se queda en 0,06 de etanol |
 | Protocolo con pulsos de vapor | **8 de 8** llegan a LORR (180-235 s) |
 
@@ -131,7 +132,7 @@ Cada una silencia un grupo de neuronas en todos los pasos, sin tocar el cableado
 | DNp01 (fibra gigante) | No escapa al golpe |
 | Motoneuronas de las seis patas | Cae y no se levanta |
 | Todo el cerebro | No se mueve |
-| MDN (marcha atrás) | La marcha atrás al chocar baja del 100 % al **31 %** |
+| MDN (marcha atrás) | Sigue retrocediendo (100 %): la marcha atrás la produce el volante, no MDN |
 
 ### 5. Aprendizaje en el cuerpo fungiforme
 
@@ -241,9 +242,9 @@ neuronales medidas en el sujeto sobrio y guarda las medidas junto a ellos (`arti
 
 | Umbral | Respuesta A | Respuesta B | Umbral |
 |---|---|---|---|
-| MN9 (ingesta) | 0,48 con solución amarga | 3,03 con solución dulce | 1,21 |
-| DNp01 (escape) | 0 en reposo | 328 tras el golpe (p10) | 18 |
-| Tono de patas (caída) | mínimo sobrio: 0,86 | – | 0,55 |
+| MN9 (ingesta) | 0,52 con solución amarga | 3,75 con solución dulce | 1,39 |
+| DNp01 (escape) | 0 en reposo | 343 tras el golpe (p10) | 18,5 |
+| Tono de patas (caída) | mínimo sobrio: 0,88 | – | 0,55 |
 
 ### La única pieza entrenada: el volante
 
@@ -257,7 +258,8 @@ sensorial directa:
 Es **simétrico**, como la mosca:
 - **el giro** sale solo de las diferencias izquierda − derecha entre neuronas homólogas (495 tipos con
   representante en los dos lados);
-- **la velocidad** sale de las sumas y de las neuronas sin pareja.
+- **la velocidad** sale solo de las **neuronas descendentes**, que son las que llevan la orden de
+  andar a las patas.
 
 Así, un cambio que afecta a los dos lados por igual, como el del etanol, no puede fabricar un giro.
 Además:
@@ -267,8 +269,8 @@ Además:
 
 Se entrena por imitación (DAgger) de un controlador que solo ve lo que ven los sentidos de la mosca, y
 nunca dónde está la comida, con episodios de las cinco sustancias, solas y mezcladas. La regularización
-se elige por **alcance en lazo cerrado menos episodios con vueltas sobre sí misma** con etanol (0,3 y
-0,5). **No se entrena con moscas borrachas**: eso le enseñaría a compensar el etanol. No toca el
+se elige por **alcance en lazo cerrado, menos episodios con vueltas sobre sí misma y menos tiempo
+quieta** con etanol (0,3 y 0,5). **No se entrena con moscas borrachas**: eso le enseñaría a compensar el etanol. No toca el
 cableado ni ve el mundo. Con el mismo volante sobre el conectoma permutado, la
 mosca no encuentra ni una gota.
 
@@ -308,8 +310,8 @@ depresión de la excitación y potenciación GABAérgica a dosis altas. Las fase
   células de Kenyon y el aprendizaje funcionan (42 tests).
 - **Lo que no funciona como en la literatura**, y se dice:
   - **MDN**, la neurona de marcha atrás (Bidaye et al. 2014), responde poco al choque (0,98 → 1,18 veces
-    su media). Silenciarla baja la marcha atrás al 31 %, pero la marcha atrás sobrevive al cableado
-    permutado.
+    su media), y silenciarla no impide retroceder: la marcha atrás la produce el volante a partir de
+    la población (y se pierde con el cableado permutado).
   - **Sin vuelo sostenido**: las motoneuronas de potencia del vuelo no suben tras el escape, así que el
     despegue es un salto.
   - La diferencia de olor entre antenas llega a las neuronas de proyección (~5 %) pero casi no a las
@@ -327,9 +329,9 @@ depresión de la excitación y potenciación GABAérgica a dosis altas. Las fase
 
 Explicación completa, con todas las decisiones y sus motivos: [`docs/behavior.md`](docs/behavior.md).
 
-### El fallo de las vueltas sobre sí misma
+### Dos fallos del volante: vueltas sobre sí misma y quedarse quieta
 
-Con la primera versión de 20.000 neuronas, al poner garrafón (o cualquier bebida que no fuera cerveza o
+**1. Vueltas sobre sí misma.** Con la primera versión de 20.000 neuronas, al poner garrafón (o cualquier bebida que no fuera cerveza o
 vino), la mosca se quedaba **girando sobre sí misma a la velocidad máxima**, incluso sin haber bebido.
 Con etanol en el cuerpo pasaba algo parecido.
 
@@ -351,8 +353,24 @@ Con etanol en el cuerpo pasaba algo parecido.
   una vuelta. Tampoco hay valores no finitos ni salidas de la arena, y como mucho un 2,7 % de neuronas
   está en el techo. Con las sinapsis KC→MBON deprimidas al 5 % (aprendizaje extremo) tampoco aparecen
   vueltas.
-- **Lo que costó**: la búsqueda de comida baja del 100 % al 95 %. La marcha atrás al chocar deja de
-  depender de la topología (sobrevive al cableado permutado), pero ahora depende en parte de MDN.
+- **Lo que costó**: la búsqueda de comida baja del 100 % al 95 %.
+
+**2. Quedarse quieta junto a una gota.** Después de ese arreglo, las gotas de garrafón y tequila se
+evaporaban sin que la mosca las tocara. Sobria llegaba a todas, pero con 0,3 de etanol casi nunca llegaba
+a nada (0-1 de cada 10).
+
+- **Causa**: con alcohol y olor en el aire, la mosca **se paraba**. La velocidad salía de todas las
+  neuronas que lee el volante, y con etanol las neuronas del olfato (proyección y MBON) se salían del
+  rango de entrenamiento y hundían la orden de andar.
+- **Arreglo**: la velocidad sale solo de las **neuronas descendentes**, que son las que la mandan en la
+  mosca real. El olor sigue orientando el giro. La regularización se elige también por el tiempo que
+  pasa quieta con etanol.
+- **Resultado**: con 0,3 de etanol llega a la bebida el 54 % de las veces (antes 0 %), y por bebida
+  entre 4 y 9 de cada 10. La marcha atrás vuelve a depender de la topología.
+
+Además, la arena pasó de 720 × 540 a **2.160 × 1.620** (triple de lado): era tan pequeña que la mosca
+chocaba con las paredes todo el rato. La prueba de estrés, repetida con la arena y el volante nuevos,
+sigue sin moscas que den vueltas (racha máxima de 1,4 s).
 - **Una consecuencia para la versión de 8.000**: su «ataxia de giro» era probablemente el mismo
   artefacto del volante.
 
@@ -371,27 +389,30 @@ Con etanol en el cuerpo pasaba algo parecido.
 
 ## Consola del experimento
 
-La interfaz web (`web/`) es una consola de registro en directo:
+La interfaz web (`web/`) está pensada para cualquiera, sin perder los datos: dice en lenguaje claro qué
+pasa y por qué, y deja lo más técnico a mano.
 
-- **Arena en 3D**: la mosca sobre la barra de un bar, a su escala (1 u = 0,1 mm). La arena es un recinto
+- **La barra en 3D**: la mosca sobre la barra de un bar, a su escala (1 u = 0,1 mm; arena de
+  21,6 × 16,2 cm). La arena es un recinto
   de metacrilato sobre un posavasos, entre una pinta de cerveza, una botella, cacahuetes y la estantería
   del fondo. Es un renderizador WebGL propio de ~25 KB, sin librerías. **Solo dibuja** lo que envía el
   servidor: posición, rumbo, altura, postura, probóscide y alas. La marcha en trípode sale de la
   distancia recorrida; en el suelo, la mosca queda de lado o panza arriba, y al extender la probóscide se
   ve el sorbo. Se puede girar la cámara arrastrando y hacer zoom con la rueda.
-- **Arena cenital** (botón «Cenital»), la vista del análisis: rejilla, escala, trayectoria coloreada por
+- **Vista desde arriba**, la del análisis: rejilla, escala, trayectoria coloreada por
   el nivel de etanol, isolíneas de olor y etiquetas de estado (ingesta, caída, LORR, vuelo).
-- **Registro de neuronas identificadas**: MN9, fibra gigante, MDN, DNp09, DNa02 izquierda y derecha,
-  motoneuronas de las patas T1-T3 y de potencia del ala, DNg12 y MBON. Tasa respecto a la del sujeto
-  sobrio, en escala logarítmica, con el umbral a partir del cual cada una actúa sobre el cuerpo.
-- **Estado del sujeto**: etanol en hemolinfa, postura, tono motor de las patas, velocidad, probóscide,
-  hambre, llenado del buche y memoria del cuerpo fungiforme.
-- **Efecto del etanol sobre la transmisión** en cada instante, por neurotransmisor.
-- **Actividad poblacional** de 1.500 neuronas en la posición real de su soma.
-- **Protocolo**: administración de soluciones, vapor de etanol, estímulo mecánico, lavado y protocolo
-  automático en dos fases (ingesta voluntaria y pulsos de vapor).
-- **Registro de eventos** con marca de tiempo y la causa neuronal de cada uno.
-- **Exportación** de todas las variables a CSV y del vídeo de la arena.
+- **La carta**: cinco bebidas para servir una gota, más golpe en la barra, vapor de etanol, lavado y el
+  protocolo automático en dos fases (ingesta voluntaria y pulsos de vapor).
+- **Cómo está**: un indicador del alcohol en sangre con sus zonas (sobria, estimulada, débil, sedada),
+  postura, fuerza en las patas, velocidad, probóscide, hambre y gotas bebidas.
+- **Su cerebro, en directo**: 12 neuronas o grupos identificados (beber · MN9, escapar · fibra gigante,
+  patas, alas, marcha atrás · MDN, giro · DNa02, memoria · MBON...). Cada uno se muestra respecto a la
+  mosca sobria, con la línea roja a partir de la cual actúa sobre el cuerpo.
+- **Qué está pasando**: cada suceso explicado con su causa neuronal («Bebe cerveza — MN9 extiende la
+  probóscide: 3,1 veces lo normal»).
+- **Para curiosos** (desplegable): efecto del etanol en cada tipo de sinapsis, 1.500 neuronas en la
+  posición real de su soma, memoria del cuerpo fungiforme, descarga de todos los datos en CSV, vídeo
+  de la arena y «Cómo funciona».
 
 La simulación corre en el servidor (FastAPI + WebSocket, cuerpo a 30 Hz, cerebro a 15 Hz) y es compartida
 por todos los observadores. El navegador solo dibuja, sin dependencias externas.

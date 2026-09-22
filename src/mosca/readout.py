@@ -6,7 +6,9 @@ where the left/right odour difference survives), and the most connected of the r
 
 It is BILATERALLY SYMMETRIC, as the fly is:
   turn  = only from left - right differences of homologous neurons (same cell type, opposite sides)
-  speed = from left + right means and the neurons without a homologue
+  speed = only from DESCENDING neurons (left + right means and those without a homologue): walking is
+          commanded by the descending neurons. When speed was read from every neuron, ethanol pushed
+          the olfactory neurons out of their trained range and the fly froze near a drink.
 A change that acts on both sides alike (ethanol acts on the whole brain) cannot make the fly turn;
 only an asymmetry can. The earlier, unconstrained readout turned a global change of activity into a
 constant turn and the fly spun in place.
@@ -36,6 +38,11 @@ def feature_index(brain, senses, n_max: int = 1536) -> np.ndarray:
     return np.sort(np.concatenate([pick, rest]))
 
 
+def speed_mask(brain, feat) -> np.ndarray:
+    """Features allowed to set the speed: the descending neurons."""
+    return np.asarray(brain.klass, str)[feat] == "descending"
+
+
 def pairing(brain, feat) -> tuple[np.ndarray, np.ndarray, int]:
     """Group id of each feature on the left (gl) and right (gr) side of its cell type, -1 if the
     type has no homologue on the other side among the features (or no type / no side)."""
@@ -58,28 +65,35 @@ def _agg(g: np.ndarray, ng: int) -> np.ndarray:
     return A / np.maximum(A.sum(0), 1.0)
 
 
-def design(Z: np.ndarray, gl: np.ndarray, gr: np.ndarray, ng: int, cache: dict | None = None):
+def design(Z: np.ndarray, gl: np.ndarray, gr: np.ndarray, ng: int, cache: dict | None = None,
+           vmask: np.ndarray | None = None):
     """Z: (T, F) clipped z-scores -> (D, V): D = left - right per homologous type (T, ng);
-    V = [(left + right) / 2, unpaired, 1] (T, ng + n_unpaired + 1)."""
+    V = [(left + right) / 2 of speed types, unpaired speed features, 1]."""
     Z = np.atleast_2d(Z)
     if cache is not None and "AL" in cache:
-        AL, AR, un = cache["AL"], cache["AR"], cache["un"]
+        AL, AR, un, gv = cache["AL"], cache["AR"], cache["un"], cache["gv"]
     else:
-        AL, AR, un = _agg(gl, ng), _agg(gr, ng), (gl < 0) & (gr < 0)
+        AL, AR = _agg(gl, ng), _agg(gr, ng)
+        vm = np.ones(len(gl), bool) if vmask is None else np.asarray(vmask, bool)
+        un = (gl < 0) & (gr < 0) & vm
+        gv = np.zeros(ng, bool)                    # a type sets the speed if its members may
+        gv[gl[(gl >= 0) & vm]] = True
+        gv[gr[(gr >= 0) & vm]] = True
         if cache is not None:
-            cache.update(AL=AL, AR=AR, un=un)
+            cache.update(AL=AL, AR=AR, un=un, gv=gv)
     L, R = Z @ AL, Z @ AR
-    return L - R, np.c_[(L + R) / 2, Z[:, un], np.ones(len(Z))]
+    return L - R, np.c_[((L + R) / 2)[:, gv], Z[:, un], np.ones(len(Z))]
 
 
 class Readout:
     TAU_ADAPT = 3.0    # s: a sustained turn to one side adapts away, like any motor command
 
-    def __init__(self, feat, mu, sd, Wd, Wv, gl, gr, ng, tau=0.1):
+    def __init__(self, feat, mu, sd, Wd, Wv, gl, gr, ng, vmask=None, tau=0.1):
         self.feat = np.asarray(feat, np.int64)
         self.mu, self.sd = np.asarray(mu, np.float32), np.asarray(sd, np.float32)
         self.Wd, self.Wv = np.asarray(Wd, np.float64), np.asarray(Wv, np.float64)
         self.gl, self.gr, self.ng = np.asarray(gl, np.int64), np.asarray(gr, np.int64), int(ng)
+        self.vmask = None if vmask is None else np.asarray(vmask, bool)
         self.tau = tau
         self.y = np.zeros(2, np.float32)
         self.bias = 0.0
@@ -88,11 +102,13 @@ class Readout:
     @classmethod
     def load(cls, path):
         z = np.load(path)
-        return cls(z["feat"], z["mu"], z["sd"], z["Wd"], z["Wv"], z["gl"], z["gr"], int(z["ng"]))
+        return cls(z["feat"], z["mu"], z["sd"], z["Wd"], z["Wv"], z["gl"], z["gr"], int(z["ng"]),
+                   z["vmask"] if "vmask" in z.files else None)
 
     def save(self, path, **meta):
         np.savez_compressed(path, feat=self.feat, mu=self.mu, sd=self.sd, Wd=self.Wd, Wv=self.Wv,
-                            gl=self.gl, gr=self.gr, ng=np.int64(self.ng), **meta)
+                            gl=self.gl, gr=self.gr, ng=np.int64(self.ng),
+                            **({} if self.vmask is None else {"vmask": self.vmask}), **meta)
 
     def reset(self):
         self.y[:] = 0.0
@@ -103,7 +119,7 @@ class Readout:
         return np.clip((h_col[self.feat] - self.mu) / self.sd, -ZCLIP, ZCLIP)
 
     def __call__(self, h_col: np.ndarray, dt: float) -> tuple[float, float]:
-        D, V = design(self.zscore(h_col)[None, :], self.gl, self.gr, self.ng, self._cache)
+        D, V = design(self.zscore(h_col)[None, :], self.gl, self.gr, self.ng, self._cache, self.vmask)
         w = float(D[0] @ self.Wd)
         # slow adaptation of the turn: brief turns (towards an odour, away from a wall) pass, a
         # turn held to one side for seconds fades (the subcircuit is not perfectly symmetric:

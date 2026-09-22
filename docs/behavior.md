@@ -27,14 +27,14 @@ misma ganancia (G = 1,25; 0,08 % de neuronas saturadas sin entrada).
 | Conducta | Neuronas que la producen | Cómo se ha comprobado |
 |---|---|---|
 | **Beber** | MN9 (motoneurona de la probóscide). Si supera el umbral, extiende la probóscide; mientras está sobre la gota, no anda. | Silenciar MN9 → no bebe nunca (test). |
-| **Aceptar o rechazar** | Gustativas del labelo y la faringe. Las «dulces» excitan a MN9 y las «amargas» la frenan, en el propio cableado. | Cerveza: MN9 a 3,0 veces su reposo → bebe. Garrafón: 0,48 → rechaza. Umbral 1,21. |
+| **Aceptar o rechazar** | Gustativas del labelo y la faringe. Las «dulces» excitan a MN9 y las «amargas» la frenan, en el propio cableado. | Cerveza: MN9 a 3,75 veces su reposo → bebe. Garrafón: 0,52 → rechaza. Umbral 1,39. |
 | **Hambre y saciedad** | Las mismas gustativas, con su ganancia cambiada por el hambre (ver abajo). MN9 decide. | Hambrienta: 5,7 s de sorbo en 6 s. Saciada: 0 s (test). |
-| **Escapar** | Órgano de Johnston → fibra gigante (DNp01). | Un golpe sube la fibra gigante de 0 a ~330 veces su media. Silenciarla → no escapa (test). |
-| **Mantenerse en pie** | Motoneuronas de las seis patas: si su tono medio baja del 55 % del sobrio durante 0,3 s, cae. | Silenciarlas → cae y no se levanta (test). Sobria, el tono nunca baja del 86 %. |
+| **Escapar** | Órgano de Johnston → fibra gigante (DNp01). | Un golpe sube la fibra gigante de 0 a ~340 veces su media. Silenciarla → no escapa (test). |
+| **Mantenerse en pie** | Motoneuronas de las seis patas: si su tono medio baja del 55 % del sobrio durante 0,3 s, cae. | Silenciarlas → cae y no se levanta (test). Sobria, el tono nunca baja del 88 %. |
 | **Sedación (LORR)** | Las mismas: en el suelo sin poder enderezarse durante 3 s. | Aparece sola a partir de ~0,7 de etanol. |
 | **Velocidad** | El tono de las patas limita la velocidad real. | Cerebro en silencio → no se mueve (test). |
-| **Rumbo y paso** | «Volante» lineal y **simétrico** sobre 1.536 neuronas que no reciben entrada sensorial directa: 512 descendentes, las neuronas de proyección del lóbulo antenal, las MBON y otras centrales. El giro sale solo de diferencias izquierda − derecha de neuronas homólogas. Única pieza entrenada. | Con el mismo volante sobre el cerebro mezclado no encuentra ni una gota. |
-| **Retroceder al chocar** | El mismo volante, a partir de lo que el tacto antenal provoca en la población, con participación de MDN. | 100 %; sin MDN, 31 %. Sobrevive al cableado mezclado. |
+| **Rumbo y paso** | «Volante» lineal y **simétrico** sobre 1.536 neuronas que no reciben entrada sensorial directa: 512 descendentes, las neuronas de proyección del lóbulo antenal, las MBON y otras centrales. El giro sale solo de diferencias izquierda − derecha de neuronas homólogas; la velocidad, solo de las descendentes. Única pieza entrenada. | Con el mismo volante sobre el cerebro mezclado no encuentra ni una gota. |
+| **Retroceder al chocar** | El mismo volante, a partir de lo que el tacto antenal provoca en la población. | 100 %; con el cableado mezclado, 0 %. Silenciar MDN no lo impide. |
 | **Aprender** | Sinapsis célula de Kenyon → MBON, deprimidas por la dopamina de su compartimento. | La respuesta de las MBON al olor entrenado baja un 17 % (test: solo cambian esas sinapsis). |
 
 Umbrales: ninguno está puesto a mano. `scripts/calibrate_motor.py` los coloca entre dos respuestas
@@ -71,7 +71,7 @@ neuromoduladores que suben la sensibilidad de las gustativas dulces y bajan la d
 
 El extremo saciado se colocó midiendo MN9: con ganancia 0,2, MN9 con cerveza queda por debajo de su
 umbral (0,48 frente a 0,68 antes de recalibrar), como la extensión de la probóscide a azúcar medio
-en moscas alimentadas. En alimentación libre, la mosca bebe 8,1 s el primer minuto y 1,7 s el
+en moscas alimentadas. En alimentación libre, la mosca bebe 10,0 s el primer minuto y 4,1 s el
 segundo.
 
 ## Células de Kenyon y aprendizaje
@@ -98,23 +98,23 @@ Nivel congelado, 24 moscas por nivel, 40 s:
 
 | Etanol | Velocidad | Giro por distancia | En el suelo | LORR | Encuentra y bebe |
 |---:|---:|---:|---:|---:|---:|
-| 0 | 37,6 | 0,036 | 0 % | 0 % | 96 % |
-| 0,15 | 41,6 | 0,028 | 0 % | 0 % | 88 % |
-| 0,3 | **64,3** | 0,034 | 0 % | 0 % | 0 % |
-| 0,45 | 57,3 | 0,035 | 0 % | 0 % | 25 % |
-| 0,6 | 48,5 | 0,044 | 0 % | 0 % | 13 % |
-| 0,75 | 1,4 | 0,071 | **96 %** | **89 %** | 0 % |
+| 0 | 49,2 | 0,020 | 0 % | 0 % | 96 % |
+| 0,15 | 54,3 | 0,020 | 0 % | 0 % | 83 % |
+| 0,3 | 60,1 | 0,036 | 0 % | 0 % | 54 % |
+| 0,45 | **65,3** | 0,028 | 0 % | 0 % | 8 % |
+| 0,6 | 59,3 | 0,034 | 0 % | 0 % | 4 % |
+| 0,75 | 1,5 | 0,048 | **96 %** | **89 %** | 0 % |
 | 0,9 | 0,1 | – | 99 % | 92 % | 0 % |
 | 1,0 | 0,1 | – | 99 % | 92 % | 0 % |
 
-Tono medio de las patas (× sobrio, 8 moscas, 30 s): 1,01 a 0 · 1,00 a 0,3 · 0,84 a 0,5 · 0,76 a 0,6 ·
-0,66 a 0,64 · 0,58 a 0,67 · **0,21 a 0,7** · 0,17 a 0,75. (El tono depende algo del volante, porque
+Tono medio de las patas (× sobrio, 8 moscas, 30 s): 0,96 a 0 · 1,12 a 0,3 · 0,82 a 0,5 · 0,76 a 0,6 ·
+0,67 a 0,64 · 0,63 a 0,67 · **0,26 a 0,7** · 0,18 a 0,75. (El tono depende algo del volante, porque
 los propioceptores de las patas codifican la velocidad a la que anda.)
 
-- **Hiperactividad** de 0,15 a 0,6, con el máximo a 0,3 (+71 %).
+- **Hiperactividad** de 0,15 a 0,6, con el máximo a 0,45 (+33 %).
 - **Pérdida de tono** progresiva de las patas desde 0,5, y **colapso** entre 0,67 y 0,7: caída y
   pérdida del reflejo de enderezamiento.
-- **La búsqueda de comida se degrada** desde 0,15 (88 % → 0-25 %).
+- **La búsqueda de comida se degrada** desde 0,15 (96 % → 54 % a 0,3 → 4 % a 0,6).
 - **Diferencia con la versión de 8.000:** allí el giro por distancia se multiplicaba por 2-4 entre
   0,45 y 0,6 («ataxia de giro»). Con 20.000 neuronas y el volante simétrico **no aparece**. Tras el
   fallo de las vueltas (abajo), aquel aumento de giro era probablemente un artefacto del volante sin
@@ -132,16 +132,15 @@ los propioceptores de las patas codifican la velocidad a la que anda.)
 |---|---:|---:|---:|---:|
 | Encuentra una gota por el olor y bebe (≤ 25 s) | **95 %** | **0 %** | 92,5 % | 0 % |
 | Rechaza el garrafón | **100 %** | **0 %** | 100 % | 0 % |
-| Retrocede al chocar con el borde | 100 % | 100 % | 100 % | 100 % |
+| Retrocede al chocar con el borde | **100 %** | **0 %** | 100 % | 100 % |
 | Acepta la cerveza | 100 % | 100 % | 100 % | 100 % |
 | Escapa al golpe | 100 % | 100 % | 100 % | 100 % |
 | Se cae estando sobria | 0 % | 0 % | 0 % | 0 % |
-| Anda (fracción del tiempo) | 88 % | 94 % | 92 % | 100 % |
+| Anda (fracción del tiempo) | 92 % | 99 % | 92 % | 100 % |
 
 El cerebro mezclado conserva cuántas conexiones tiene cada neurona, su peso y su signo; solo baraja
-quién conecta con quién. Dos conductas dependen de la topología: buscar por el olor y rechazar el
-amargo. Aceptar lo dulce, escapar y retroceder no demuestran nada sobre el conectoma. (Con el primer
-volante de 20.000 la marcha atrás también se perdía al mezclar; con el volante simétrico, no.)
+quién conecta con quién. Tres conductas dependen de la topología: buscar por el olor, rechazar el
+amargo y retroceder. Aceptar lo dulce y escapar no demuestran nada sobre el conectoma.
 
 ## El fallo de las vueltas sobre sí misma (22-09-2026)
 
@@ -191,10 +190,28 @@ moscas, con el objeto en directo tal como lo ejecuta el servidor:
 **Coste del arreglo.** La búsqueda de comida baja del 100 % al 95 %. La marcha atrás deja de depender
 de la topología, pero pasa a depender en parte de MDN (sin MDN, 31 %).
 
+## Segundo fallo: quedarse quieta junto a una gota (22-09-2026, noche)
+
+**Síntoma.** Las gotas de garrafón y tequila se evaporaban sin que la mosca las tocara. Sobria llegaba a
+todas (9-10 de 10); con 0,3 de etanol, a casi ninguna (0-1 de 10).
+
+**Causa.** Con alcohol y olor en el aire la mosca **se paraba** a ~230 u de la gota, con pasitos
+adelante y atrás. La velocidad salía de todas las neuronas que lee el volante, y con etanol las neuronas
+del olfato (proyección y MBON) se salían del rango de entrenamiento y hundían la orden de andar.
+
+**Arreglo.** La velocidad sale solo de las **neuronas descendentes**, que son las que llevan la orden
+de andar a las patas (`readout.speed_mask`). La regularización se elige también por el tiempo que pasa
+quieta con etanol. Resultado con 0,3 de etanol, por bebida (de 10): cerveza 7, vino 4, licor 8,
+tequila 9, garrafón 8.
+
+**Arena.** Pasó de 720 × 540 a 2.160 × 1.620 u (triple de lado, 21,6 × 16,2 cm), porque la mosca chocaba
+con las paredes todo el rato. Normas, umbrales y volante se recalcularon con ella. La prueba de estrés,
+repetida, sigue en 0 de 90 moscas con vueltas (racha máxima de 1,4 s).
+
 ## Lo que no sale bien y por qué
 
-- **MDN** responde poco al choque (0,98 → 1,18 veces su media; antes 1,01 → 1,09). Silenciarla baja
-  la marcha atrás del 100 % al 31 %: participa, pero no es la única vía.
+- **MDN** responde poco al choque (1,00 → 1,21 veces su media; antes 1,01 → 1,09), y silenciarla no
+  impide retroceder: la marcha atrás la produce el volante a partir de la población.
 - **Sin vuelo sostenido.** Las motoneuronas de potencia del vuelo no suben tras el escape (1,06
   frente a 1,12 en reposo), así que el despegue es un salto.
 - **Lateralización olfativa débil.** La diferencia izquierda/derecha llega a las neuronas de

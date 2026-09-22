@@ -159,7 +159,7 @@ def test_ws_bad_origin_rejected(server):
 def test_ws_protocol_orders_and_limits(server):
     async def fn(ws):
         hello = json.loads(await asyncio.wait_for(ws.recv(), 5))
-        assert hello["t"] == "hello" and hello["me"] == "ana" and hello["arena"] == [720, 540]
+        assert hello["t"] == "hello" and hello["me"] == "ana" and hello["arena"] == [2160, 1620]
         assert {d["id"] for d in hello["drinks"]} == {"beer", "wine", "shot", "tequila", "garrafon"}
         # malformed messages must be ignored
         for junk in ["{", "[]", "null", json.dumps({"t": "drink", "kind": 5}), json.dumps({"t": "x"}), "x" * 2000]:
@@ -190,9 +190,9 @@ def test_ws_protocol_orders_and_limits(server):
     assert len(f["map"]) == 24 and all(0 <= v <= 255 for v in f["map"])
     assert set(f["f"]) >= {"x", "y", "th", "z", "v", "w", "pose", "act", "prob", "wing"}
     assert max(len(fr["puddles"]) for fr in frames) <= 3
-    assert any("ana administra" in t for t in toasts)
+    assert any("ana sirve" in t for t in toasts)
     # 5 orders while at most 3 puddles fit: at least one "bar full" unless she drank one meanwhile
-    assert any("Arena completa" in t for t in toasts) or any(len(fr["puddles"]) < 3 for fr in frames[-60:])
+    assert any("barra está llena" in t for t in toasts) or any(len(fr["puddles"]) < 3 for fr in frames[-60:])
 
 
 def test_order_rate_limit(server):
@@ -210,7 +210,7 @@ def test_order_rate_limit(server):
         return toasts
     time.sleep(1.6)
     toasts = _ws_session(server, "10.0.0.7", fn)
-    assert any("Espera" in t for t in toasts) or any("Arena completa" in t for t in toasts)
+    assert any("Espera" in t for t in toasts) or any("barra está llena" in t for t in toasts)
 
 
 def test_pauses_without_clients(server):

@@ -3,13 +3,14 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const W = 720, H = 540, TAU = Math.PI * 2;
+  let K = W / 720;                     // canvas px per arena unit (the arena comes in hello)
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
   const angLerp = (a, b, t) => { const d = ((b - a + Math.PI) % TAU + TAU) % TAU - Math.PI; return a + d * t; };
   const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
   const SANS = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
-  const C = { bg: '#0b0e12', grid: '#18202a', grid2: '#243040', line: '#242b35', text: '#d6dce4', muted: '#7c8794',
-    faint: '#515b67', data: '#4fb3d9', eth: '#e0a340', alert: '#e25c5c', ok: '#5fbf8f' };
+  const C = { bg: '#0f0c0a', grid: '#1d1712', grid2: '#2c231b', line: '#342a21', text: '#efe6da', muted: '#b3a595',
+    faint: '#7d6f61', data: '#5cc2c7', eth: '#f0a53a', alert: '#ec6a5a', ok: '#7cc98f' };
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fmt = (v, d = 2) => (v === undefined || v === null || Number.isNaN(v)) ? '–' : Number(v).toFixed(d).replace('.', ',');
 
@@ -51,13 +52,13 @@
 
   // ---------------------------------------------------------------- phase label (level only)
   function phaseOf(m) {
-    if (m.lorr) return ['Pérdida del reflejo de enderezamiento', 'bad'];
-    if (m.down) return ['Caída', 'bad'];
+    if (m.lorr) return ['KO · no puede levantarse', 'bad'];
+    if (m.down) return ['En el suelo', 'bad'];
     const a = m.a;
-    if (a < 0.15) return ['Basal', 'good'];
-    if (a < 0.6) return ['Estimulación', 'warn'];
-    if (a < 0.7) return ['Hipotonía motora', 'warn'];
-    return ['Sedación', 'bad'];
+    if (a < 0.15) return ['Sobria', 'good'];
+    if (a < 0.6) return ['Estimulada', 'warn'];
+    if (a < 0.7) return ['Débil', 'warn'];
+    return ['Sedada', 'bad'];
   }
 
   // ---------------------------------------------------------------- arena
@@ -69,7 +70,7 @@
     for (let x = 0; x <= W; x += 30) { g.strokeStyle = x % 150 === 0 ? C.grid2 : C.grid; g.beginPath(); g.moveTo(x + .5, 0); g.lineTo(x + .5, H); g.stroke(); }
     for (let y = 0; y <= H; y += 30) { g.strokeStyle = y % 150 === 0 ? C.grid2 : C.grid; g.beginPath(); g.moveTo(0, y + .5); g.lineTo(W, y + .5); g.stroke(); }
     // arena boundary (walls at 30 u)
-    g.strokeStyle = '#4a5666'; g.setLineDash([4, 4]); g.strokeRect(30.5, 30.5, W - 61, H - 61); g.setLineDash([]);
+    g.strokeStyle = '#5a4a3a'; g.setLineDash([4, 4]); g.strokeRect(30 * K + .5, 30 * K + .5, W - 60 * K - 1, H - 60 * K - 1); g.setLineDash([]);
     if (!cur) { hud(g); return; }
     const s = interp(now);
     // odour field (faint isolines)
@@ -77,7 +78,7 @@
       const sub = subs[p.kind] || {};
       for (const r of [60, 120, 200]) {
         g.strokeStyle = hexA(sub.color || '#888888', 0.08 * p.amt);
-        g.beginPath(); g.arc(p.x, p.y, r, 0, TAU); g.stroke();
+        g.beginPath(); g.arc(p.x * K, p.y * K, r * K, 0, TAU); g.stroke();
       }
     }
     // drops
@@ -85,12 +86,12 @@
       const sub = subs[p.kind] || { name: p.kind, color: '#999999', abv: 0 };
       const r = 5 + 11 * Math.sqrt(clamp(p.amt, 0, 1));
       g.fillStyle = hexA(sub.color, 0.35); g.strokeStyle = hexA(sub.color, 0.9); g.lineWidth = 1.2;
-      g.beginPath(); g.arc(p.x, p.y, r, 0, TAU); g.fill(); g.stroke();
+      g.beginPath(); g.arc(p.x * K, p.y * K, r, 0, TAU); g.fill(); g.stroke();
       g.fillStyle = '#aab4c0'; g.font = `11px ${MONO}`; g.textBaseline = 'middle';
       const label = `${sub.name} ${Math.round(sub.abv * 100)}% · ${Math.round(p.amt * 100)}%`;
-      const right = p.x + r + 5 + g.measureText(label).width < W - 34;      // keep the label inside the arena
+      const right = p.x * K + r + 5 + g.measureText(label).width < W - 34;      // keep the label inside the arena
       g.textAlign = right ? 'left' : 'right';
-      g.fillText(label, right ? p.x + r + 5 : p.x - r - 5, p.y);
+      g.fillText(label, right ? p.x * K + r + 5 : p.x * K - r - 5, p.y * K);
     }
     // trajectory, coloured by ethanol level
     for (let i = 1; i < trail.length; i++) {
@@ -99,7 +100,7 @@
       const age = (now - b.t) / 20000;
       g.strokeStyle = mixColor(C.data, C.eth, clamp(b.a / 0.8, 0, 1), 0.85 * (1 - age));
       g.lineWidth = 1.3;
-      g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke();
+      g.beginPath(); g.moveTo(a.x * K, a.y * K); g.lineTo(b.x * K, b.y * K); g.stroke();
     }
     drawFly(g, s, now);
     hud(g);
@@ -107,9 +108,9 @@
 
   function drawFly(g, s, now) {
     g.save();
-    g.translate(s.x, s.y);
+    g.translate(s.x * K, s.y * K);
     const down = s.pose !== 'up';
-    const scale = 1.7 * (1 + 0.35 * s.z);        // drawn 1.7x so the posture is readable
+    const scale = 1.2 * (1 + 0.35 * s.z);        // drawn larger than scale so the posture is readable
     if (s.z > 0.05) {                         // shadow when airborne
       g.fillStyle = 'rgba(0,0,0,0.35)';
       g.beginPath(); g.ellipse(6 * s.z, 8 * s.z, 9, 5, s.th, 0, TAU); g.fill();
@@ -162,7 +163,7 @@
     if (s.z > 0.1) tags.push(['VUELO', C.ok]);
     g.font = `10px ${MONO}`; g.textBaseline = 'middle';
     tags.forEach(([txt, col], i) => {
-      const x = s.x + 16, y = s.y - 14 - i * 14;
+      const x = s.x * K + 16, y = s.y * K - 14 - i * 14;
       const w = g.measureText(txt).width + 8;
       g.fillStyle = 'rgba(7,9,12,0.8)'; g.fillRect(x, y - 6, w, 12);
       g.strokeStyle = col; g.lineWidth = 1; g.strokeRect(x + .5, y - 5.5, w - 1, 11);
@@ -177,11 +178,11 @@
     if (cur) {
       g.fillStyle = C.eth; g.fillText(`EtOH = ${fmt(cur.a, 3)}`, 38, 55);
     }
-    // scale bar: 100 u
+    // scale bar: 100 px
     g.strokeStyle = '#aab4c0'; g.lineWidth = 1.5;
     g.beginPath(); g.moveTo(W - 140, H - 42); g.lineTo(W - 40, H - 42); g.stroke();
     g.beginPath(); g.moveTo(W - 140, H - 46); g.lineTo(W - 140, H - 38); g.moveTo(W - 40, H - 46); g.lineTo(W - 40, H - 38); g.stroke();
-    g.fillStyle = '#aab4c0'; g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillText('100 u', W - 90, H - 47);
+    g.fillStyle = '#aab4c0'; g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillText(`${Math.round(100 / K)} u`, W - 90, H - 47);
     if (recording) { g.fillStyle = C.alert; g.textAlign = 'right'; g.textBaseline = 'top'; g.fillText('● REC', W - 38, 38); }
   }
 
@@ -241,7 +242,7 @@
       const y0 = top + i * laneH, y1 = y0 + laneH - 4;
       const { lo, hi, thr } = laneScale(ch[i].key);
       const Y = (v) => y1 - (Math.log10(clamp(v, lo, hi)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) * (y1 - y0);
-      g.fillStyle = i % 2 ? '#0c1015' : '#0a0d11'; g.fillRect(0, y0 - 2, w, laneH);
+      g.fillStyle = i % 2 ? '#161210' : '#120e0b'; g.fillRect(0, y0 - 2, w, laneH);
       g.strokeStyle = C.line; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(x0, Y(1) + .5); g.lineTo(x1, Y(1) + .5); g.stroke(); g.setLineDash([]);
       if (thr) { g.strokeStyle = 'rgba(226,92,92,.7)'; g.beginPath(); g.moveTo(x0, Y(thr) + .5); g.lineTo(x1, Y(thr) + .5); g.stroke(); }
       g.fillStyle = C.muted; g.textAlign = 'left'; g.textBaseline = 'middle';
@@ -374,40 +375,41 @@
     return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${ss.toFixed(1).padStart(4, '0')}`;
   }
   let nLog = 0;
-  function log(text, cls = 'ev-user', t = cur ? cur.tt : 0) {
+  function log(text, cls = 'ev-user', why = '', t = cur ? cur.tt : 0) {
     const li = document.createElement('li');
     const s = Math.max(0, t);
     li.innerHTML = `<span class="t">${String(Math.floor(s / 60)).padStart(2, '0')}:${(s % 60).toFixed(1).padStart(4, '0')}</span><span class="${cls}"></span>`;
     li.lastChild.textContent = text;
+    if (why) { const w = document.createElement('span'); w.className = 'why'; w.textContent = why; li.lastChild.append(w); }
     const box = $('#log'); box.prepend(li);
     while (box.children.length > 300) box.lastChild.remove();
-    nLog++; $('#logCount').textContent = `${nLog} eventos`;
+    nLog++; $('#logCount').textContent = `${nLog} ${nLog === 1 ? 'evento' : 'eventos'}`;
   }
 
   function detectEvents(m) {
     const ch = hello && hello.channels ? Object.fromEntries(hello.channels.map((c, i) => [c.key, m.ch[i]])) : {};
     for (const fx of m.fx || []) {
-      if (fx === 'fall') log(`Caída · tono motor de las patas ${fmt(m.tone, 2)} × sobrio (umbral ${fmt(hello.thresholds.tone_fall, 2)})`, 'ev-alert');
-      else if (fx === 'wake') log(`Enderezamiento · tono motor ${fmt(m.tone, 2)} × sobrio`, 'ev-ok');
-      else if (fx === 'escape') log(`Despegue · DNp01 ${fmt(ch.DNp01, 0)} × reposo (umbral ${fmt(hello.thresholds.DNp01, 0)})`, 'ev-neuro');
-      else if (fx === 'tap') log('Estímulo mecánico aplicado (órgano de Johnston)', 'ev-user');
-      else if (fx === 'shower') log('Lavado: etanol a 0', 'ev-user');
-      else if (fx === 'vapor') log('Exposición a vapor de etanol: entra en la hemolinfa sin ingesta', 'ev-eth');
+      if (fx === 'fall') log('Se cae', 'ev-alert', `sus patas se quedan sin fuerza: tono ${fmt(m.tone, 2)} del normal (se cae por debajo de ${fmt(hello.thresholds.tone_fall, 2)})`);
+      else if (fx === 'wake') log('Se levanta', 'ev-ok', `sus motoneuronas recuperan el tono (${fmt(m.tone, 2)})`);
+      else if (fx === 'escape') log('¡Salta!', 'ev-neuro', `la fibra gigante (DNp01) se dispara: ${fmt(ch.DNp01, 0)} veces su nivel normal`);
+      else if (fx === 'tap') log('Golpe en la barra', 'ev-user', 'la vibración llega al órgano de Johnston, en las antenas');
+      else if (fx === 'shower') log('Lavado: alcohol a cero', 'ev-user', 'sus neuronas se recuperan solas');
+      else if (fx === 'vapor') log('Vapor de etanol', 'ev-eth', 'el alcohol entra en la sangre sin que beba, como en el laboratorio');
     }
     if (m.sip && !prevSip) {
       const p = nearestPuddle(m);
       const sub = p ? subs[p.kind] : null;
       intakes++;
-      log(`PER · MN9 ${fmt(ch.MN9, 2)} × reposo > umbral ${fmt(hello.thresholds.MN9, 2)} · ingesta${sub ? ' de ' + sub.name.toLowerCase() : ''}`, 'ev-neuro');
-    } else if (!m.sip && prevSip) log('Fin de la ingesta', 'ev-neuro');
-    if (m.lorr && !prevLorr) log('LORR: sin recuperación postural en 3 s', 'ev-alert');
-    if (!m.lorr && prevLorr) log('Fin de LORR', 'ev-ok');
+      log(`Bebe${sub ? ' ' + sub.name.toLowerCase() : ''}`, 'ev-neuro', `MN9 extiende la probóscide: ${fmt(ch.MN9, 2)} veces lo normal (umbral ${fmt(hello.thresholds.MN9, 2)})`);
+    } else if (!m.sip && prevSip) log('Deja de beber', 'ev-neuro');
+    if (m.lorr && !prevLorr) log('KO', 'ev-alert', 'lleva 3 s en el suelo sin poder levantarse (pérdida del reflejo de enderezamiento)');
+    if (!m.lorr && prevLorr) log('Vuelve en sí', 'ev-ok');
     // drops: new ones and those that disappear without being drunk
     const seen = new Map(m.puddles.map((p) => [p.id, p]));
     for (const [id, p] of prevPuddles) {
       if (!seen.has(id)) {
         const sub = subs[p.kind] || { name: p.kind };
-        log(p.amt < 0.05 ? `Gota de ${sub.name.toLowerCase()} consumida` : `Gota de ${sub.name.toLowerCase()} evaporada sin tocar`, 'ev-eth');
+        log(p.amt < 0.05 ? `Se acaba la gota de ${sub.name.toLowerCase()}` : `La gota de ${sub.name.toLowerCase()} se evapora sin que la toque`, 'ev-eth');
       }
     }
     prevPuddles = seen;
@@ -422,29 +424,34 @@
   // ---------------------------------------------------------------- messages
   function b64bytes(s) { const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
   function onHello(m) {
+    if (m.arena) { K = W / m.arena[0]; if (scene && scene.setArena) scene.setArena(m.arena[0], m.arena[1]); }
     hello = m;
     const body = $('#substances'); body.textContent = '';
     for (const d of m.substances || []) {
       subs[d.id] = d;
-      const tr = document.createElement('tr');
-      const note = d.impurity > 0.1 ? 'con impurezas' : (d.sugar >= 0.5 ? 'dulce' : (d.abv >= 0.35 ? 'amarga' : ''));
-      tr.innerHTML = `<td><span class="swatch" style="background:${d.color}"></span>${d.name}<span class="note">${note}</span></td>
-        <td class="num">${Math.round(d.abv * 100)} %</td><td class="num">${fmt(d.sugar, 2)}</td><td class="num">${fmt(d.dose, 2)}</td>
-        <td><button class="btn small" type="button">Administrar</button></td>`;
-      tr.querySelector('button').addEventListener('click', (e) => administer(d.id, e.currentTarget));
-      body.append(tr);
+      const note = d.impurity > 0.1 ? 'amargo, con impurezas' : (d.sugar >= 0.5 ? 'dulce' : (d.abv >= 0.35 ? 'amargo' : ''));
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'drink';
+      const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = d.color;
+      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = d.name;
+      const ab = document.createElement('span'); ab.className = 'ab'; ab.textContent = `${Math.round(d.abv * 100)} % alcohol · ${note}`;
+      const go = document.createElement('span'); go.className = 'go'; go.textContent = 'Servir una gota';
+      b.append(sw, nm, ab, go);
+      b.addEventListener('click', (e) => administer(d.id, e.currentTarget));
+      body.append(b);
     }
     if (m.scatter && m.scatter.n) {
       scXY = b64bytes(m.scatter.xy); scKind = b64bytes(m.scatter.kind); scAspect = m.scatter.aspect || 1;
-      $('#popMeta').textContent = `${m.scatter.n.toLocaleString('es')} somas de ${m.model ? m.model.N.toLocaleString('es') : '–'}`;
+      $('#popMeta').textContent = `de ${m.model ? m.model.N.toLocaleString('es') : '–'}`;
     }
     if (m.model) {
       $('#subject').textContent = `Dm-${String(m.model.seed).slice(-6)}`;
+      $('#mN').textContent = m.model.N.toLocaleString('es');
       $('#modelLine').textContent = `Modelo: ${m.model.N.toLocaleString('es')} neuronas (${m.model.sensory.toLocaleString('es')} sensoriales, ` +
         `${m.model.descending.toLocaleString('es')} descendentes, ${m.model.motor} motoneuronas) · ${m.model.edges.toLocaleString('es')} conexiones · ${m.model.f_brain} Hz · MaleCNS v1.0`;
     }
     buildSyn();
-    if (!nLog) log('Registro iniciado', 'ev-user');
+    if (!nLog) log('Empieza el registro', 'ev-user', 'sirve una gota de la carta y mira qué hace');
   }
 
   function onFrame(m) {
@@ -470,17 +477,18 @@
     const [ph, cls] = phaseOf(m);
     const phEl = $('#phase'); phEl.textContent = ph;
     phEl.style.color = cls === 'bad' ? C.alert : cls === 'warn' ? C.eth : C.ok;
-    const eth = $('#mEth'); eth.textContent = fmt(m.a, 3); eth.className = 'v mono' + (m.a >= 0.7 ? ' bad' : m.a >= 0.15 ? ' warn' : '');
+    const eth = $('#mEth'); eth.textContent = fmt(m.a, 2);
+    $('#gaugeFill').style.width = `${clamp(m.a, 0, 1) * 100}%`;
     const pose = $('#mPose');
-    pose.textContent = m.lorr ? 'LORR' : m.down ? 'Caída' : f.z > 0.1 ? 'En vuelo' : 'Erguida';
+    pose.textContent = m.lorr ? 'KO' : m.down ? 'En el suelo' : f.z > 0.1 ? 'Saltando' : 'De pie';
     pose.className = 'v' + (m.lorr || m.down ? ' bad' : ' good');
-    $('#mPoseNote').textContent = m.lorr ? 'sin enderezamiento' : '';
+    $('#mPoseNote').textContent = m.lorr ? 'LORR' : '';
     const tone = $('#mTone'); tone.textContent = fmt(m.tone, 2);
     tone.className = 'v mono' + (hello && m.tone < hello.thresholds.tone_fall ? ' bad' : m.tone < 0.75 ? ' warn' : '');
     $('#mSpeed').textContent = fmt(Math.abs(f.v), 0);
-    const per = $('#mPer'); per.textContent = m.sip ? 'Extendida' : f.prob > 0.3 ? 'Parcial' : 'Retraída';
+    const per = $('#mPer'); per.textContent = m.sip ? 'Bebiendo' : f.prob > 0.3 ? 'A medias' : 'Recogida';
     per.className = 'v' + (m.sip ? ' good' : '');
-    $('#mPerNote').textContent = m.sip ? 'ingesta' : '';
+    $('#mPerNote').textContent = m.sip ? 'MN9' : '';
     $('#mDrunk').textContent = intakes;
     const hu = $('#mHunger'); hu.textContent = fmt(m.hunger, 2);
     hu.className = 'v mono' + (m.hunger < 0.2 ? ' good' : '');
@@ -488,13 +496,15 @@
     $('#mCrop').textContent = fmt(m.crop, 2);
     $('#mMem').textContent = fmt(m.mb * 100, 1);
     const vb = $('#vapor');
-    if (m.vapor > 0) { vb.classList.add('on'); vb.textContent = `Vapor de etanol · ${Math.ceil(m.vapor)} s`; }
-    else if (vb.classList.contains('on')) { vb.classList.remove('on'); vb.textContent = 'Vapor de etanol (20 s)'; }
+    if (m.vapor > 0) { vb.classList.add('on'); vb.querySelector('small').textContent = `quedan ${Math.ceil(m.vapor)} s`; }
+    else if (vb.classList.contains('on')) { vb.classList.remove('on'); vb.querySelector('small').textContent = 'como en el laboratorio'; }
     $('#hud').textContent = `x ${fmt(f.x, 0)} · y ${fmt(f.y, 0)} · θ ${fmt(f.th, 2)} rad · v ${fmt(f.v, 1)} u/s · ω ${fmt(f.w, 2)} rad/s · z ${fmt(f.z, 2)}`;
     if (m.eth) updateSyn(m.eth);
     if (m.demo !== demoOn) {
       demoOn = m.demo; const b = $('#demo');
-      b.classList.toggle('on', demoOn); b.textContent = demoOn ? 'Detener protocolo' : 'Protocolo automático';
+      b.classList.toggle('on', demoOn);
+      b.childNodes[1].textContent = demoOn ? 'Detener protocolo' : 'Protocolo automático';
+      b.querySelector('small').textContent = demoOn ? 'en marcha' : 'de sobria a KO en 4 min';
     }
   }
 
@@ -514,7 +524,7 @@
     a.download = `exp-dm20k-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.csv`;
     a.href = URL.createObjectURL(blob); document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    log(`Datos exportados: ${csv.length} muestras a 10 Hz`, 'ev-user');
+    log('Datos descargados', 'ev-user', `${csv.length} muestras a 10 Hz`);
   }
 
   // ---------------------------------------------------------------- video

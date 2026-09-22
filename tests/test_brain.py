@@ -13,7 +13,7 @@ import pytest
 from mosca.config import ARTIFACTS
 from mosca.readout import Readout
 from mosca.sim import BRAIN_FILE, READOUT_FILE, Sim, load_brain
-from mosca.world import DT, TABLE_W
+from mosca.world import DT, TABLE_H, TABLE_W
 
 NORMS = json.loads((ARTIFACTS / "norms.json").read_text())
 BRAIN = load_brain()
@@ -37,7 +37,7 @@ def silence(s, *groups):
 
 
 def held_on(s, kind, secs=6.0):
-    s.world.place_fly(360, 270, 0.0)
+    s.world.place_fly(TABLE_W / 2, TABLE_H / 2, 0.0)
     p = s.order(kind, 100, 120)
     f = s.world.fly
     p.x, p.y = f.x + 4, f.y

@@ -20,7 +20,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from mosca.readout import ZCLIP, Readout, design, feature_index, pairing     # noqa: E402
+from mosca.readout import ZCLIP, Readout, design, feature_index, pairing, speed_mask     # noqa: E402
 from mosca.sim import Sim, load_brain                # noqa: E402
 from mosca.world import DT                           # noqa: E402
 
@@ -41,7 +41,7 @@ def ctx():
         s = Sim(br, seed=0, readout=None, norms={})
         feat = feature_index(br, s.senses)
         gl, gr, ng = pairing(br, feat)
-        _C.update(brain=br, senses=s.senses, feat=feat, pair=(gl, gr, ng))
+        _C.update(brain=br, senses=s.senses, feat=feat, pair=(gl, gr, ng, speed_mask(br, feat)))
     return _C
 
 
@@ -80,6 +80,7 @@ def episode(seed, beta, model, secs=25.0, collect=True, norms=None, a=None):
     X, Y, R = [], [], []
     reached, t_reach, sat, ticks = False, secs, 0, 0
     run, sign, longest = 0, 0.0, 0
+    frozen = 0
     for k in range(int(secs / DT)):
         tick = s.acc + DT >= s.period
         s.step()
@@ -90,6 +91,8 @@ def episode(seed, beta, model, secs=25.0, collect=True, norms=None, a=None):
             run = run + 1 if (sg != 0 and sg == sign) else (1 if sg != 0 else 0)
             sign = sg
             longest = max(longest, run)
+            f = s.world.fly
+            frozen += f.pose == "up" and not f.sipping and abs(f.v) < 5 and f.z < 0.05
         if tick and collect:
             X.append(s.features(c["feat"]))
             Y.append(s.label)
@@ -99,7 +102,7 @@ def episode(seed, beta, model, secs=25.0, collect=True, norms=None, a=None):
             reached, t_reach = True, (k + 1) * DT
     return (np.asarray(X, np.float32), np.asarray(Y, np.float32),
             {"reach": float(reached), "t": t_reach, "sat": sat / max(ticks, 1),
-             "spin_s": longest * s.period}, R)
+             "spin_s": longest * s.period, "frozen": frozen / max(ticks, 1)}, R)
 
 
 def _ep(args):
@@ -126,7 +129,7 @@ def cmd_norms(a):
 def cmd_readout(a):
     norms = json.loads((ART / "norms.json").read_text())
     c = ctx()
-    gl, gr, ng = c["pair"]
+    gl, gr, ng, vmask = c["pair"]
     XtX = XtY = VtV = VtY = None
     n, mu, sd, model = 0, None, None, None
     cache: dict = {}
@@ -140,7 +143,7 @@ def cmd_readout(a):
             Y = np.concatenate([o[1] for o in out]).astype(np.float64)
             if mu is None:
                 mu, sd = X.mean(0), X.std(0) + 1e-6
-            D, V = design(np.clip((X - mu) / sd, -ZCLIP, ZCLIP), gl, gr, ng, cache)
+            D, V = design(np.clip((X - mu) / sd, -ZCLIP, ZCLIP), gl, gr, ng, cache, vmask)
             if XtX is None:
                 XtX, XtY = np.zeros((D.shape[1],) * 2), np.zeros(D.shape[1])
                 VtV, VtY = np.zeros((V.shape[1],) * 2), np.zeros(V.shape[1])
@@ -162,18 +165,19 @@ def cmd_readout(a):
                                        for i in range(a.val // 2)])
                 reach = float(np.mean([r[2]["reach"] for r in res]))
                 sat = float(np.mean([r[2]["spin_s"] > SPIN_S for r in drunk]))    # episodes that spin
-                score = reach - sat
-                scores.append((score, float(np.mean([r[2]["t"] for r in res])), lam, m, reach, sat))
+                frz = float(np.mean([r[2]["frozen"] for r in drunk]))              # time frozen in place
+                score = reach - sat - max(0.0, frz - 0.3)
+                scores.append((score, float(np.mean([r[2]["t"] for r in res])), lam, m, reach, sat, frz))
             scores.sort(key=lambda s: (-s[0], s[1]))
-            score, t_mean, lam, model, reach, sat = scores[0]
+            score, t_mean, lam, model, reach, sat, frz = scores[0]
             row = {"ronda": rnd, "beta_experto": beta, "lambda": lam, "muestras": n,
-                   "alcance_lazo_cerrado": round(reach, 3), "vueltas_sobre_si_con_etanol": round(sat, 3),
+                   "alcance_lazo_cerrado": round(reach, 3), "vueltas_sobre_si_con_etanol": round(sat, 3), "quieta_con_etanol": round(frz, 3),
                    "t_medio": round(t_mean, 1), "segundos": round(time.time() - t0)}
             hist.append(row)
             print(json.dumps(row), flush=True)
             if score > best[1]:
                 best = (model, score)
-    Readout(c["feat"], *best[0], gl, gr, ng).save(ART / "readout.npz")
+    Readout(c["feat"], *best[0], gl, gr, ng, vmask).save(ART / "readout.npz")
     (ART / "train_log.json").write_text(json.dumps({"historial": hist, "alcance": best[1]}, indent=1))
     print("-> artifacts/readout.npz · alcance en lazo cerrado", best[1])
 

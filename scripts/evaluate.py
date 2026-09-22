@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from mosca.readout import Readout                     # noqa: E402
 from mosca.sim import BRAIN_FILE, READOUT_FILE, Sim, load_brain  # noqa: E402
-from mosca.world import DT, TABLE_W                   # noqa: E402
+from mosca.world import DT, TABLE_H, TABLE_W          # noqa: E402
 
 ART = ROOT / "artifacts"
 SHUF = ART / "brain_shuffled.npz"
@@ -79,7 +79,7 @@ def t_approach(seed, a=None):
 
 def t_sip(seed, kind):
     s = sim(seed)
-    s.world.place_fly(360, 270, 0.0)
+    s.world.place_fly(TABLE_W / 2, TABLE_H / 2, 0.0)
     p = s.order(kind, 100, 120)
     f = s.world.fly
     p.x, p.y = f.x + 4, f.y
@@ -98,7 +98,7 @@ def t_backward(seed):
     for _ in range(40):
         s.step()
     f = s.world.fly
-    f.x, f.y, f.th, f.v = TABLE_W - 32, 270.0, float(np.random.default_rng(seed).normal(0, 0.2)), 60.0
+    f.x, f.y, f.th, f.v = TABLE_W - 32, TABLE_H / 2, float(np.random.default_rng(seed).normal(0, 0.2)), 60.0
     bumped, back = None, 0
     for k in range(int(4 / DT)):
         s.step()
@@ -148,7 +148,7 @@ def t_satiety(seed, hunger):
     """Held on a beer drop with the hunger frozen: seconds of sipping in 6 s."""
     s = sim(seed)
     s.gut.freeze(hunger)
-    s.world.place_fly(360, 270, 0.0)
+    s.world.place_fly(TABLE_W / 2, TABLE_H / 2, 0.0)
     p = s.order("beer", 100, 120)
     f = s.world.fly
     p.x, p.y = f.x + 4, f.y
@@ -194,7 +194,7 @@ def t_mdn(seed, ablate=False):
     for _ in range(40):
         s.step()
     f = s.world.fly
-    f.x, f.y, f.th, f.v = TABLE_W - 32, 270.0, float(np.random.default_rng(seed).normal(0, 0.2)), 60.0
+    f.x, f.y, f.th, f.v = TABLE_W - 32, TABLE_H / 2, float(np.random.default_rng(seed).normal(0, 0.2)), 60.0
     pre, post, bumped, back = [], [], None, 0
     for k in range(int(4 / DT)):
         s.step()

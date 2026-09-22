@@ -12,7 +12,7 @@ from dataclasses import dataclass
 import numpy as np
 
 DT = 1.0 / 30.0
-TABLE_W, TABLE_H = 720.0, 540.0
+TABLE_W, TABLE_H = 2160.0, 1620.0      # 216 x 162 mm (1 u = 0,1 mm); was 720 x 540: too small
 MARGIN = 30.0
 MAX_PUDDLES = 3
 RAY_ANGLES = (-math.radians(40), 0.0, math.radians(40))

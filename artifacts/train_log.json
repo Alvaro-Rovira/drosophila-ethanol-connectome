@@ -3,73 +3,80 @@
   {
    "ronda": 0,
    "beta_experto": 1.0,
-   "lambda": 0.0001,
+   "lambda": 1e-06,
    "muestras": 36000,
-   "alcance_lazo_cerrado": 0.5,
+   "alcance_lazo_cerrado": 0.333,
    "vueltas_sobre_si_con_etanol": 0.0,
-   "t_medio": 20.0,
-   "segundos": 46
+   "quieta_con_etanol": 0.062,
+   "t_medio": 20.1,
+   "segundos": 30
   },
   {
    "ronda": 1,
    "beta_experto": 0.5,
    "lambda": 1e-06,
    "muestras": 72000,
-   "alcance_lazo_cerrado": 0.625,
-   "vueltas_sobre_si_con_etanol": 0.0,
-   "t_medio": 17.3,
-   "segundos": 107
+   "alcance_lazo_cerrado": 0.375,
+   "vueltas_sobre_si_con_etanol": 0.083,
+   "quieta_con_etanol": 0.039,
+   "t_medio": 20.0,
+   "segundos": 65
   },
   {
    "ronda": 2,
    "beta_experto": 0.25,
-   "lambda": 1e-06,
+   "lambda": 1e-05,
    "muestras": 108000,
-   "alcance_lazo_cerrado": 0.5,
+   "alcance_lazo_cerrado": 0.333,
    "vueltas_sobre_si_con_etanol": 0.0,
-   "t_medio": 18.8,
-   "segundos": 174
+   "quieta_con_etanol": 0.056,
+   "t_medio": 20.2,
+   "segundos": 101
   },
   {
    "ronda": 3,
    "beta_experto": 0.125,
-   "lambda": 1e-06,
+   "lambda": 1e-05,
    "muestras": 144000,
-   "alcance_lazo_cerrado": 0.667,
-   "vueltas_sobre_si_con_etanol": 0.083,
-   "t_medio": 17.6,
-   "segundos": 239
+   "alcance_lazo_cerrado": 0.375,
+   "vueltas_sobre_si_con_etanol": 0.0,
+   "quieta_con_etanol": 0.051,
+   "t_medio": 20.6,
+   "segundos": 139
   },
   {
    "ronda": 4,
    "beta_experto": 0.0625,
-   "lambda": 1e-05,
+   "lambda": 1e-06,
    "muestras": 180000,
-   "alcance_lazo_cerrado": 0.625,
-   "vueltas_sobre_si_con_etanol": 0.083,
-   "t_medio": 17.7,
-   "segundos": 302
+   "alcance_lazo_cerrado": 0.542,
+   "vueltas_sobre_si_con_etanol": 0.0,
+   "quieta_con_etanol": 0.043,
+   "t_medio": 18.4,
+   "segundos": 181
   },
   {
    "ronda": 5,
    "beta_experto": 0.03125,
    "lambda": 1e-06,
    "muestras": 216000,
-   "alcance_lazo_cerrado": 0.708,
+   "alcance_lazo_cerrado": 0.5,
    "vueltas_sobre_si_con_etanol": 0.0,
-   "t_medio": 17.6,
-   "segundos": 364
+   "quieta_con_etanol": 0.093,
+   "t_medio": 19.3,
+   "segundos": 226
   },
   {
    "ronda": 6,
    "beta_experto": 0.015625,
-   "lambda": 1e-05,
+   "lambda": 1e-06,
    "muestras": 252000,
-   "alcance_lazo_cerrado": 0.75,
-   "vueltas_sobre_si_con_etanol": 0.25,
-   "t_medio": 18.1,
-   "segundos": 429
+   "alcance_lazo_cerrado": 0.5,
+   "vueltas_sobre_si_con_etanol": 0.0,
+   "quieta_con_etanol": 0.128,
+   "t_medio": 19.5,
+   "segundos": 274
   }
  ],
- "alcance": 0.7083333333333334
+ "alcance": 0.5416666666666666
 }
