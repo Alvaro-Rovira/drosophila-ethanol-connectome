@@ -25,6 +25,7 @@ from .world import DT
 WEB = Path(os.environ.get("MOSCA_WEB", ROOT / "web"))
 DEBUG = os.environ.get("MOSCA_DEBUG") == "1"
 STATIC = {"/app.js": ("app.js", "text/javascript; charset=utf-8"),
+          "/scene3d.js": ("scene3d.js", "text/javascript; charset=utf-8"),
           "/style.css": ("style.css", "text/css; charset=utf-8"),
           "/": ("index.html", "text/html; charset=utf-8")}
 

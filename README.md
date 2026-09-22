@@ -28,6 +28,12 @@ conductas dependen de verdad de la topología del conectoma y cuáles no.
 
 ![Consola del experimento](artifacts/screens/consola.png)
 
+| Vista 3D: la mosca en la barra de un bar | Vista 3D: caída a 0,72 de etanol |
+|:---:|:---:|
+| ![barra 3D](artifacts/gifs/barra-3d.gif) | ![caída en 3D](artifacts/gifs/barra-3d-caida.gif) |
+
+Vista cenital (la que usa el análisis):
+
 | Basal | Etanol 0,45 · estimulación | Etanol 0,66 · hipotonía |
 |:---:|:---:|:---:|
 | ![basal](artifacts/gifs/basal.gif) | ![estimulación](artifacts/gifs/estimulacion.gif) | ![hipotonía](artifacts/gifs/hipotonia.gif) |
@@ -317,8 +323,14 @@ Explicación completa, con todas las decisiones y sus motivos: [`docs/behavior.m
 
 La interfaz web (`web/`) es una consola de registro en directo:
 
-- **Arena** cenital con rejilla, escala, trayectoria coloreada por el nivel de etanol, isolíneas de olor
-  y etiquetas de estado (ingesta, caída, LORR, vuelo).
+- **Arena en 3D**: la mosca sobre la barra de un bar, a su escala (1 u = 0,1 mm). La arena es un recinto
+  de metacrilato sobre un posavasos, entre una pinta de cerveza, una botella, cacahuetes y la estantería
+  del fondo. Es un renderizador WebGL propio de ~25 KB, sin librerías. **Solo dibuja** lo que envía el
+  servidor: posición, rumbo, altura, postura, probóscide y alas. La marcha en trípode sale de la
+  distancia recorrida; en el suelo, la mosca queda de lado o panza arriba, y al extender la probóscide se
+  ve el sorbo. Se puede girar la cámara arrastrando y hacer zoom con la rueda.
+- **Arena cenital** (botón «Cenital»), la vista del análisis: rejilla, escala, trayectoria coloreada por
+  el nivel de etanol, isolíneas de olor y etiquetas de estado (ingesta, caída, LORR, vuelo).
 - **Registro de neuronas identificadas**: MN9, fibra gigante, MDN, DNp09, DNa02 izquierda y derecha,
   motoneuronas de las patas T1-T3 y de potencia del ala, DNg12 y MBON. Tasa respecto a la del sujeto
   sobrio, en escala logarítmica, con el umbral a partir del cual cada una actúa sobre el cuerpo.
@@ -385,7 +397,7 @@ configs/        etanol, olores, estómago, protocolo, textos de la consola
 artifacts/      subcircuito, volante, normas, umbrales, evaluaciones, GIFs y capturas
 docs/           comportamiento, subcircuito, notas sobre los datos
 tests/          mundo, etanol, ablaciones, saciedad, vapor, aprendizaje, control permutado, servidor
-web/            consola (JavaScript sin dependencias)
+web/            consola (JavaScript sin dependencias); scene3d.js: vista 3D en WebGL
 ```
 
 ---

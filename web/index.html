@@ -8,6 +8,7 @@
 <title>Etanol y comportamiento · preparación in silico</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230e1116'/%3E%3Ccircle cx='8' cy='8' r='3' fill='%234fb3d9'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/style.css">
+<script src="/scene3d.js" defer></script>
 <script src="/app.js" defer></script>
 </head>
 <body>
@@ -28,11 +29,16 @@
   <div class="col">
     <section class="panel arena-panel">
       <header class="ph">
-        <h2>Arena · cámara cenital</h2>
-        <span class="ph-meta mono" id="arenaMeta">720 × 540 u · 30 fps</span>
+        <h2>Arena</h2>
+        <div class="views" role="group" aria-label="Vista de la arena">
+          <button id="view3d" class="btn small on" type="button" aria-pressed="true">3D · barra</button>
+          <button id="view2d" class="btn small" type="button" aria-pressed="false">Cenital</button>
+        </div>
       </header>
       <div class="arena-wrap">
-        <canvas id="table" width="720" height="540" role="img" aria-label="Vista cenital de la arena con la mosca, su trayectoria y las gotas"></canvas>
+        <canvas id="table" width="720" height="540" role="img" aria-label="Vista cenital de la arena con la mosca, su trayectoria y las gotas" hidden></canvas>
+        <canvas id="scene" role="img" aria-label="Vista 3D de la mosca sobre la barra de un bar"></canvas>
+        <canvas id="overlay" aria-hidden="true"></canvas>
         <div id="offline" class="offline" hidden>sin señal · reconectando</div>
       </div>
       <div class="arena-foot mono" id="hud">x – · y – · θ – · v – u/s · ω – rad/s</div>

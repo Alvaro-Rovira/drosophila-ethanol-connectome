@@ -28,6 +28,9 @@ STAGES = [  # name, query, action. The level is frozen; everything else comes fr
     ("caida", "debug_a=0.72&seed=22&debug_puddles=1", None),
     ("lorr", "debug_a=0.9&seed=15", None),
     ("estimulo-mecanico", "debug_a=0&seed=16", "tap"),
+    # 3D view of the bar (same simulation, drawn in WebGL)
+    ("barra-3d", "debug_a=0&seed=11&debug_puddles=1", "3d"),
+    ("barra-3d-caida", "debug_a=0.72&seed=22&debug_puddles=1", "3d"),
 ]
 
 
@@ -89,8 +92,8 @@ def console(base, token, wait_s=150.0):
     print("consola ->", SCREENS / "consola.png")
 
 
-def grab(page):
-    url = page.evaluate("document.querySelector('#table').toDataURL('image/png')")
+def grab(page, sel="#table"):
+    url = page.evaluate(f"document.querySelector('{sel}').toDataURL('image/png')")
     return Image.open(io.BytesIO(base64.b64decode(url.split(",", 1)[1]))).convert("RGB")
 
 
@@ -118,6 +121,10 @@ def gifs(base, token, fps=12, seconds=10, only=None):
                 continue
             page.goto(f"{base}/?{q}")
             page.wait_for_function("window.__mosca && window.__mosca.frames() > 45", timeout=20000)
+            sel = "#scene" if action == "3d" else "#table"
+            page.evaluate(f"window.__mosca.setView('{'3d' if action == '3d' else '2d'}')")
+            if action == "3d":
+                page.evaluate("Object.assign(window.__mosca.scene.cam, {dist: 150, pitch: 0.5, yaw: 0.4})")
             time.sleep(1.0)
             frames = []
             t0 = time.time()
@@ -128,11 +135,14 @@ def gifs(base, token, fps=12, seconds=10, only=None):
                     time.sleep(d)
                 if action == "tap" and k == fps * 3:
                     page.click("#tap")
-                im = grab(page).resize((480, 360), Image.LANCZOS)
+                if action == "3d":
+                    page.evaluate(f"window.__mosca.scene.cam.yaw = {0.4 + 0.02 * k}")   # slow orbit
+                im = grab(page, sel).resize((400, 300) if action == "3d" else (480, 360), Image.LANCZOS)
                 frames.append(im)
                 if k % 20 == 0:
                     im.save(FRAMES / f"{name}-{k:03d}.png")
-            save_gif(frames, GIFS / f"{name}.gif", fps)
+            save_gif(frames[::2] if action == "3d" else frames, GIFS / f"{name}.gif", fps // 2 if action == "3d" else fps,
+                     colors=64 if action == "3d" else 96)
             print(name, "->", GIFS / f"{name}.gif", flush=True)
         ctx.close()
         b.close()

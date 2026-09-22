@@ -324,6 +324,36 @@
   }
 
   // ---------------------------------------------------------------- render loop
+  // ---------------------------------------------------------------- 3D view
+  let view = '3d', scene = null;
+  try { scene = window.Scene3D && window.Scene3D.create($('#scene'), $('#overlay')); } catch (e) { scene = null; }
+  function setView(v) {
+    view = scene ? v : '2d';
+    $('#table').hidden = view !== '2d'; $('#scene').hidden = view !== '3d'; $('#overlay').hidden = view !== '3d';
+    $('#view3d').classList.toggle('on', view === '3d'); $('#view2d').classList.toggle('on', view === '2d');
+    $('#view3d').setAttribute('aria-pressed', String(view === '3d')); $('#view2d').setAttribute('aria-pressed', String(view === '2d'));
+  }
+  $('#view3d').addEventListener('click', () => setView('3d'));
+  $('#view2d').addEventListener('click', () => setView('2d'));
+  if (!scene) $('#view3d').disabled = true;
+  setView(scene ? '3d' : '2d');
+  window.__mosca.scene = scene;
+  window.__mosca.setView = setView;
+  function flyTags() {
+    const tags = [];
+    if (!cur) return tags;
+    if (cur.lorr) tags.push(['LORR', C.alert]);
+    else if (cur.down) tags.push(['CAÍDA', C.alert]);
+    if (cur.sip) tags.push(['PER · ingesta', C.data]);
+    if (cur.f.z > 0.1) tags.push(['VUELO', C.ok]);
+    return tags;
+  }
+  function draw3d(now) {
+    const s = cur ? interp(now) : null;
+    scene.render({ s, now, legPhase, puddles: cur ? cur.puddles : [], subs, trail, tags: flyTags(),
+      hud: { t: fmt(cur ? cur.tt : 0, 1), a: fmt(cur ? cur.a : 0, 3), rec: recording } });
+  }
+
   function render(now) {
     requestAnimationFrame(render);
     if (cur) {
@@ -332,6 +362,7 @@
     }
     lastRender = now;
     drawArena(now);
+    if (view === '3d' && scene) draw3d(now);
     if (now - sideT > 66) { sideT = now; drawTraces(); drawEth(); drawPop(); }
   }
   let sideT = 0;
@@ -488,9 +519,10 @@
 
   // ---------------------------------------------------------------- video
   function record() {
-    if (recording || !arena.captureStream || !window.MediaRecorder) return;
+    const src = view === '3d' && scene ? $('#scene') : arena;
+    if (recording || !src.captureStream || !window.MediaRecorder) return;
     const type = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find((t) => MediaRecorder.isTypeSupported(t)) || '';
-    const rec = new MediaRecorder(arena.captureStream(30), type ? { mimeType: type, videoBitsPerSecond: 4e6 } : undefined);
+    const rec = new MediaRecorder(src.captureStream(30), type ? { mimeType: type, videoBitsPerSecond: 4e6 } : undefined);
     const chunks = [];
     rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
     rec.onstop = () => {
