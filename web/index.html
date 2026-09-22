@@ -13,7 +13,7 @@
 <body>
 <header class="bar">
   <div class="title">
-    <span class="exp-id">EXP-DM8K</span>
+    <span class="exp-id">EXP-DM20K</span>
     <h1>Etanol y comportamiento en una preparación <i>in silico</i> de <i>Drosophila melanogaster</i></h1>
   </div>
   <dl class="run">
@@ -45,6 +45,7 @@
       </table>
       <div class="controls">
         <button id="tap" class="btn" type="button">Estímulo mecánico</button>
+        <button id="vapor" class="btn" type="button">Vapor de etanol (20 s)</button>
         <button id="shower" class="btn" type="button">Lavado (EtOH → 0)</button>
         <button id="demo" class="btn" type="button">Protocolo automático</button>
       </div>
@@ -68,9 +69,12 @@
         <div class="m"><span class="k">Velocidad</span><span class="v mono" id="mSpeed">–</span><span class="u">u/s</span></div>
         <div class="m"><span class="k">Probóscide (MN9)</span><span class="v" id="mPer">–</span><span class="u" id="mPerNote"></span></div>
         <div class="m"><span class="k">Ingerido</span><span class="v mono" id="mDrunk">0</span><span class="u">administraciones</span></div>
+        <div class="m"><span class="k">Hambre</span><span class="v mono" id="mHunger">–</span><span class="u" id="mHungerNote"></span></div>
+        <div class="m"><span class="k">Buche</span><span class="v mono" id="mCrop">–</span><span class="u">llenado</span></div>
+        <div class="m"><span class="k">Memoria KC→MBON</span><span class="v mono" id="mMem">–</span><span class="u">% depresión</span></div>
       </div>
       <canvas id="ethPlot" class="plot" aria-label="Etanol en hemolinfa, últimos 120 s"></canvas>
-      <p class="cap">Etanol en hemolinfa, últimos 120 s. Líneas: umbrales en los que, en este modelo, aparecen la hiperactividad (0,15), la ataxia (0,45) y la caída (0,75).</p>
+      <p class="cap">Etanol en hemolinfa, últimos 120 s. Líneas: niveles en los que, en este modelo, aparecen la hiperactividad (0,15), la pérdida de tono de las patas (0,6) y la caída con sedación (0,7).</p>
     </section>
     <section class="panel neuro-panel">
       <header class="ph">
@@ -104,12 +108,25 @@
     <h2>Métodos</h2>
 
     <h3>Preparación</h3>
-    <p>Red de tasas sobre <b id="mN">8.000</b> neuronas del conectoma MaleCNS v1.0, con su cableado y signos reales
+    <p>Red de tasas sobre <b id="mN">20.000</b> neuronas del conectoma MaleCNS v1.0, con su cableado y signos reales
     (acetilcolina, dopamina, serotonina y octopamina excitan; GABA, glutamato e histamina inhiben). Las neuronas se
-    eligen por función: todas las descendentes, motoneuronas de patas, alas, cuello y probóscide, receptores
-    olfativos, gustativos, mecanosensoriales antenales y del órgano de Johnston, y las vías que los unen. El cableado
-    no se modifica. Constantes de tiempo por clase (sensorial 15 ms, interneurona 30, descendente 45, motora 75),
-    adaptación en neuronas centrales, integración a 15 Hz.</p>
+    eligen por función: todas las descendentes y las motoneuronas; todos los receptores olfativos, el lóbulo antenal
+    y el cuerno lateral; el cuerpo fungiforme (células de Kenyon, APL, MBON, dopaminérgicas); el complejo central;
+    las neurosecretoras; los propioceptores de patas y halterios; el gusto, el tacto antenal y el órgano de Johnston;
+    y las vías que los unen. El cableado no se modifica. Constantes de tiempo por clase (sensorial 15 ms,
+    interneurona 30, descendente 45, motora 75), adaptación en neuronas centrales, integración a 15 Hz. Las
+    células de Kenyon tienen umbral alto: responde ~9 % a cada olor.</p>
+
+    <h3>Entradas</h3>
+    <ul>
+      <li><b>Olfato</b>: cada sustancia tiene su mezcla de glomérulos (receptores ORN de cada tipo), por antena.</li>
+      <li><b>Gusto</b>: dulce y amargo por las gustativas del labelo y la faringe; qué tipo es dulce o amargo se
+      decide por su efecto sobre MN9 en el propio conectoma.</li>
+      <li><b>Hambre</b>: no hay vía sináptica del intestino a MN9; se modela como en la mosca real, como ganancia
+      hormonal de las gustativas (dulce ×1,4 hambrienta, ×0,2 saciada).</li>
+      <li><b>Propiocepción</b> por propioceptores reales de patas (velocidad) y halterios (giro); <b>brújula</b>
+      por las E-PG según su glomérulo del puente protocerebral.</li>
+    </ul>
 
     <h3>Lectura motora</h3>
     <ul>
@@ -117,34 +134,40 @@
       <li><b>Escape</b>: despegue cuando la fibra gigante (DNp01) supera su umbral.</li>
       <li><b>Postura</b>: de pie mientras el tono medio de las motoneuronas de las seis patas es ≥ 55 % del sobrio;
       por debajo durante 0,3 s, caída; sin recuperación durante 3 s, pérdida del reflejo de enderezamiento (LORR).</li>
-      <li><b>Locomoción</b>: rumbo y paso de una lectura lineal sobre 1.024 neuronas que no reciben la entrada
-      directa (única pieza entrenada, por imitación de un controlador que solo ve lo que ven los sentidos);
-      la velocidad efectiva está limitada por el tono de las patas.</li>
+      <li><b>Locomoción</b>: rumbo y paso de una lectura lineal sobre 1.536 neuronas (descendentes, neuronas de
+      proyección del lóbulo antenal, MBON y otras centrales) que no reciben la entrada directa; única pieza
+      entrenada, por imitación de un controlador que solo ve lo que ven los sentidos.</li>
     </ul>
-    <p>Los umbrales se colocan entre dos respuestas neuronales medidas en el sujeto sobrio (p. ej. MN9 con sacarosa
-    frente a MN9 con una solución amarga), no a mano.</p>
+    <p>Los umbrales se colocan entre dos respuestas neuronales medidas en el sujeto sobrio, no a mano.</p>
+
+    <h3>Aprendizaje</h3>
+    <p>Las sinapsis de las células de Kenyon a las MBON se deprimen cuando la célula de Kenyon está activa a la
+    vez que las dopaminérgicas de ese compartimento disparan por encima de su nivel basal, y se recuperan en
+    minutos. Es el único cambio de cableado permitido.</p>
 
     <h3>Etanol</h3>
-    <p>Absorción desde el buche y eliminación lineal (acelerada para que se observe en minutos). El etanol solo
-    actúa sobre la transmisión sináptica: monoaminas ×1,3 a dosis bajas y ×0,6 a dosis altas; excitación
-    colinérgica deprimida hasta ×0,35; inhibición ×0,85 a dosis bajas y potenciada hasta ×1,6; ruido sináptico
-    multiplicativo de media cero; retraso sensorial de hasta 400 ms; sensibilidad olfativa reducida.</p>
+    <p>Por ingesta (buche → hemolinfa) o por vapor. Solo actúa sobre la transmisión sináptica: monoaminas ×1,3 a
+    dosis bajas y ×0,6 a dosis altas; excitación colinérgica deprimida hasta ×0,35; inhibición ×0,85 a dosis bajas
+    y potenciada hasta ×1,6; ruido sináptico multiplicativo de media cero; retraso sensorial de hasta 400 ms;
+    sensibilidad olfativa reducida.</p>
 
     <h3>Resultados principales</h3>
     <table class="res mono">
-      <tr><th>Nivel</th><th>Velocidad</th><th>Giro/distancia</th><th>En el suelo</th></tr>
-      <tr><td>0</td><td>39,5</td><td>0,050</td><td>0 %</td></tr>
-      <tr><td>0,3</td><td>74,2</td><td>0,032</td><td>0 %</td></tr>
-      <tr><td>0,6</td><td>16,8</td><td>0,223</td><td>0 %</td></tr>
-      <tr><td>0,75</td><td>1,2</td><td>0,361</td><td>83 %</td></tr>
+      <tr><th>Nivel</th><th>Velocidad</th><th>Tono patas</th><th>En el suelo</th><th>LORR</th></tr>
+      <tr><td>0</td><td>34,9</td><td>1,07</td><td>0 %</td><td>0 %</td></tr>
+      <tr><td>0,45</td><td>52,8</td><td>–</td><td>0 %</td><td>0 %</td></tr>
+      <tr><td>0,6</td><td>50,1</td><td>0,73</td><td>0 %</td><td>0 %</td></tr>
+      <tr><td>0,75</td><td>1,5</td><td>0,19</td><td>95 %</td><td>88 %</td></tr>
     </table>
-    <p>Control con cableado permutado (mismos grados, pesos y signos): la búsqueda de alimento cae de 92,5 % a 0 % y
-    el rechazo del garrafón de 100 % a 0 %. Escape, aceptación de la cerveza y retroceso ante la pared no cambian:
-    esas conductas no dependen de la topología en este modelo. MDN apenas responde al tacto antenal.</p>
+    <p>Control con cableado permutado (mismos grados, pesos y signos): la búsqueda de alimento cae de 100 % a 0 %,
+    el rechazo del garrafón de 100 % a 0 % y la marcha atrás ante la pared de 100 % a 0 %. Escape y aceptación de
+    la cerveza no cambian. Una mosca saciada no bebe cerveza (0 s frente a 5,7 s hambrienta), por eso la sedación
+    se estudia con vapor.</p>
 
     <h3>Limitaciones</h3>
-    <p>Anclas cualitativas de la literatura, no ajuste a datos crudos. Sustancias, arena y velocidad de eliminación
-    son ficticias. La propiocepción y una corriente tónica de vigilia entran por neuronas elegidas con semilla fija.
+    <p>Anclas cualitativas de la literatura, no ajuste a datos crudos. Sustancias, olores, arena y velocidades de
+    eliminación son ficticios. El hambre es una ganancia, la brújula entra directamente por las E-PG y una corriente
+    tónica de vigilia entra por las monoaminérgicas. Sin vuelo sostenido: el escape es un salto.
     Detalle en <span class="mono">docs/behavior.md</span>.</p>
     <button class="btn" type="button" id="methodsClose">Cerrar</button>
   </article>

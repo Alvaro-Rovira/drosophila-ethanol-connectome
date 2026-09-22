@@ -111,6 +111,7 @@ def create_app() -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     app.state.hub = None
     taps: dict[str, float] = {}
+    vapors: dict[str, float] = {}
 
     def hub() -> Hub:
         if app.state.hub is None:
@@ -191,6 +192,12 @@ def create_app() -> FastAPI:
                         if now - taps.get(name, -9.0) >= 3.0:        # once every 3 s per visitor
                             taps[name] = now
                             live.tap()
+                    elif kind == "vapor":
+                        now = time.monotonic()
+                        if now - vapors.get(name, -99.0) >= 10.0:    # once every 10 s per visitor
+                            vapors[name] = now
+                            live.vapor(20.0)
+                            h.toast(ui["toasts"]["vapor"].format(who=name))
                     elif kind == "reset":
                         live.reset()
                         h.toast(ui["toasts"]["reset"].format(who=name))

@@ -63,6 +63,8 @@ def rest_and_tap(seed):
         r = s.rel
         gf = max(s.body.pair(r, "DNp01"))
         pw = float(np.mean(s.body.pair(r, "MN_wing_power")))
+        if k < int(1 / DT):
+            continue                          # start-up transient of the network
         if k < int(5 / DT):
             rest["gf"].append(gf)
             rest["power"].append(pw)
@@ -89,8 +91,12 @@ def main():
     lo, hi = float(np.percentile(garr, 90)), float(np.percentile(beer, 10))
     c.sip_on = float(np.sqrt(max(lo, 1e-3) * max(hi, 1e-3))) if hi > lo else float(np.mean(beer))
     c.sip_off = 0.7 * c.sip_on
-    c.gf = float(np.sqrt(max(np.percentile(rest["gf"], 99.9), 1e-3) * max(np.percentile(tap_gf, 10), 1e-3)))
-    c.fly_keep = float(0.5 * (np.percentile(rest["power"], 99) + np.percentile(tap_pw, 50)))
+    # the giant fibre is silent at rest: the lower anchor is floored at the sober mean (1)
+    c.gf = float(np.sqrt(max(np.percentile(rest["gf"], 99.9), 1.0) * max(np.percentile(tap_gf, 10), 1e-3)))
+    rp, tp = np.percentile(rest["power"], 99), np.percentile(tap_pw, 50)
+    # if the flight-power motor neurons do not rise after the escape, there is no sustained flight:
+    # the take-off is a jump (the threshold cannot be reached)
+    c.fly_keep = float(0.5 * (rp + tp)) if tp > rp else 1e9
     c.groom = float(1.5 * np.percentile(rest["groom"], 99.9))
     c.song = float(1.5 * np.percentile(rest["song"], 99.9))
     out = {**c.__dict__,

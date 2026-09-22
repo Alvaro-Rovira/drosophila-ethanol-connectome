@@ -23,10 +23,10 @@ GIFS = ROOT / "artifacts" / "gifs"
 FRAMES = ROOT / "artifacts" / "frames"
 STAGES = [  # name, query, action. The level is frozen; everything else comes from the neurons.
     ("basal", "debug_a=0&seed=11&debug_puddles=1", None),
-    ("estimulacion", "debug_a=0.3&seed=12&debug_puddles=1", None),
-    ("ataxia", "debug_a=0.55&seed=13&debug_puddles=1", None),
-    ("ataxia-severa", "debug_a=0.72&seed=14&debug_puddles=1", None),
-    ("lorr", "debug_a=0.95&seed=15", None),
+    ("estimulacion", "debug_a=0.45&seed=12&debug_puddles=1", None),
+    ("hipotonia", "debug_a=0.66&seed=13&debug_puddles=1", None),
+    ("caida", "debug_a=0.72&seed=22&debug_puddles=1", None),
+    ("lorr", "debug_a=0.9&seed=15", None),
     ("estimulo-mecanico", "debug_a=0&seed=16", "tap"),
 ]
 
@@ -66,6 +66,27 @@ def screens(base, token, prefix, wait_s=6.0):
             ctx.close()
         b.close()
     print("screens ->", SCREENS)
+
+
+def console(base, token, wait_s=150.0):
+    """The whole console at 1440 px while the automatic protocol runs (README image)."""
+    SCREENS.mkdir(parents=True, exist_ok=True)
+    with sync_playwright() as p:
+        b = p.chromium.launch()
+        ctx = b.new_context(viewport={"width": 1440, "height": 1010}, device_scale_factor=1, bypass_csp=True)
+        page = ctx.new_page()
+        login(page, base, token)
+        page.goto(f"{base}/?seed=7")             # a fresh, naive subject (debug mode)
+        page.wait_for_function("window.__mosca && window.__mosca.frames() > 45", timeout=20000)
+        page.click("#demo")
+        time.sleep(wait_s)
+        page.evaluate("window.scrollTo(0, 0)")
+        time.sleep(0.5)
+        page.screenshot(path=str(SCREENS / "consola.png"))
+        page.click("#demo")
+        ctx.close()
+        b.close()
+    print("consola ->", SCREENS / "consola.png")
 
 
 def grab(page):
@@ -119,7 +140,7 @@ def gifs(base, token, fps=12, seconds=10, only=None):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["screens", "gifs"])
+    ap.add_argument("what", choices=["screens", "gifs", "console"])
     ap.add_argument("--base", default="http://127.0.0.1:8765")
     ap.add_argument("--prefix", default="local")
     ap.add_argument("--token", default=None)
@@ -128,5 +149,7 @@ if __name__ == "__main__":
     tok = a.token or local_token()
     if a.what == "screens":
         screens(a.base, tok, a.prefix)
+    elif a.what == "console":
+        console(a.base, tok)
     else:
         gifs(a.base, tok, only=a.only)

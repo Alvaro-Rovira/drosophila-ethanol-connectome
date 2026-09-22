@@ -25,7 +25,7 @@ from mosca.sim import Sim, load_brain                # noqa: E402
 from mosca.world import DT                           # noqa: E402
 
 ART = ROOT / "artifacts"
-LAMBDAS = (1e-4, 1e-3, 1e-2, 1e-1)
+LAMBDAS = (1e-6, 1e-5, 1e-4, 1e-3)
 _C = {}
 
 

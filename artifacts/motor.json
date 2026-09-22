@@ -4,28 +4,28 @@
  "hyst": 0.05,
  "fall_s": 0.3,
  "right_every_s": 1.0,
- "sip_on": 0.6925967605453075,
- "sip_off": 0.4848177323817152,
- "gf": 34.3378620293653,
- "fly_keep": 1.3146409542322182,
- "groom": 5.054796242403743,
- "song": 63.70048597455025,
+ "lorr_s": 3.0,
+ "sip_on": 1.2075469474139797,
+ "sip_off": 0.8452828631897857,
+ "gf": 18.111826532426004,
+ "fly_keep": 1000000000.0,
+ "groom": 27.36938693191967,
+ "song": 1.8859196712241202,
  "tone_min": 0.0,
  "tone_max": 1.5,
  "_medidas": {
   "MN9_cerveza": [
-   1.173,
-   1.174
+   3.028,
+   3.035
   ],
   "MN9_garrafon": [
-   0.408,
-   0.409
+   0.481,
+   0.481
   ],
-  "GF_reposo_p99_9": 2.968,
-  "GF_golpe_p10": 397.281,
-  "potencia_ala_reposo_p99": 1.196,
-  "potencia_ala_golpe": 1.433,
-  "tono_patas_sobria_min": 0.727
- },
- "lorr_s": 3.0
+  "GF_reposo_p99_9": 0.0,
+  "GF_golpe_p10": 328.038,
+  "potencia_ala_reposo_p99": 1.118,
+  "potencia_ala_golpe": 1.061,
+  "tono_patas_sobria_min": 0.861
+ }
 }

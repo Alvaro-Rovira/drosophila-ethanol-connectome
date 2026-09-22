@@ -1,4 +1,4 @@
-"""The 8.000-neuron subcircuit, chosen by FUNCTION so that the brain can actually move the fly.
+"""The 20.000-neuron subcircuit, chosen by FUNCTION so that the brain can actually move the fly.
 
 The previous selection (sensory inputs -> descending neurons in <= 3 hops) had no motor neuron at
 all, no MDN, no giant fibre, no DNp09 and no olfactory receptor: those neurons could not drive the
@@ -11,6 +11,11 @@ legs, so a script had to. Here the quotas put inside, in this order:
   vias         for each sensory -> anchor pathway, the neurons with the most path flow between them
   premotoras   VNC neurons that receive from descending neurons and reach the motor neurons
   relleno      the rest, by path flow sensors -> descending/motor in <= 4 hops
+
+The 20.000 version adds, before the partners: every olfactory receptor, leg taste and
+proprioceptors, every central monoaminergic neuron, the antennal lobe, the lateral horn, the mushroom
+body (Kenyon cells by input from the projection neurons), the central complex and the internal-state
+neurons (neurosecretory, enteric) with their partners.
 
   uv run python scripts/prep.py            # -> artifacts/brain.npz + docs/subcircuit-report.md
 """
@@ -36,11 +41,17 @@ EDGES = DATA / "edges_w2.npz"
 INH = {"gaba", "glutamate", "histamine"}
 MONO = {"octopamine", "dopamine", "serotonin"}
 
-CAP_SENSORY = 1300
-CAP_PARTNERS = 1300
-CAP_PATHWAY = 220
-CAP_PREMOTOR = 900
-CAP_MB = 200
+CAP_SENSORY = 4600
+CAP_GRN_LEG = 300
+CAP_PROP_LEG = 600
+CAP_PROP_HALTERE = 100
+CAP_LH = 900
+CAP_KC = 2000
+CAP_CX = 1500
+CAP_STATE = 400
+CAP_PARTNERS = 2000
+CAP_PATHWAY = 300
+CAP_PREMOTOR = 2000
 PATHWAYS = {
     "olfato_giro": (["ORN"], ["DNa01", "DNa02", "DNg13", "DNp09"]),
     "gusto_MN9": (["GRN_labellar", "GRN_pharyngeal"], ["MN9", "MN_feeding"]),
@@ -49,6 +60,8 @@ PATHWAYS = {
     "vibracion_GF": (["JO_AB"], ["DNp01", "DNg11", "DNg12"]),
     "descendentes_patas": (["DNp09", "MDN", "DNa02"], ["MN_leg_T1", "MN_leg_T2", "MN_leg_T3"]),
 }
+SENSORY_ALL = ["ORN", "JO_AB", "antennal_mech", "GRN_labellar", "GRN_pharyngeal", "GRN_leg",
+               "PROP_leg", "PROP_haltere"]
 
 
 def log(*a):
@@ -100,15 +113,17 @@ def select(df, a, pre, post, w, target):
     n = len(df)
     ids = df["bodyId"].to_numpy()
     sc = df["superclass"].to_numpy().astype(str)
+    nt = df["nt"].to_numpy().astype(str)
     pos = lambda b: np.searchsorted(ids, np.asarray(b, np.int64))
     M = sp.csr_matrix((w.astype(np.float32), (post, pre)), shape=(n, n))
     P = (sp.diags(1.0 / np.maximum(np.asarray(M.sum(1)).ravel(), 1.0)).astype(np.float32) @ M).tocsr()
     PT = P.T.tocsr()
     anchors = pos(ids_of(a, *ANCHOR_GROUPS))
-    sens = pos(ids_of(a, *["ORN", "JO_AB", "antennal_mech", "GRN_labellar", "GRN_pharyngeal", "GRN_leg"]))
+    sens = pos(ids_of(a, *SENSORY_ALL))
     dn = pos(ids_of(a, "DN_all"))
     mn = pos(ids_of(a, "MN_all"))
     score = spread(P, sens, 4) * (spread(PT, anchors, 4) + 0.25 * spread(PT, np.union1d(dn, mn), 4))
+    reach_dn = spread(PT, dn, 4)
     taken = np.zeros(n, bool)
     chosen = {}
 
@@ -116,23 +131,44 @@ def select(df, a, pre, post, w, target):
         cand = np.unique(np.asarray(cand, np.int64))
         cand = cand[~taken[cand]]
         if cap is not None and len(cand) > cap:
-            cand = cand[np.argsort(-(score if key is None else key)[cand])[:cap]]
+            cand = cand[np.argsort(-(score if key is None else key)[cand], kind="stable")[:cap]]
         cap_left = target - int(taken.sum())
         cand = cand[:max(cap_left, 0)]
         taken[cand] = True
         chosen[name] = cand
         log(f"  {name:22s} {len(cand):5d}   (total {int(taken.sum()):5d})")
 
-    take("anclas", anchors)
+    def inflow(src):
+        """Synapses each neuron receives from the set src (1 hop)."""
+        m = np.zeros(n, bool)
+        m[src] = True
+        return np.bincount(post[m[pre]], weights=w[m[pre]], minlength=n)
+
+    take("anclas", np.concatenate([anchors, pos(ids_of(a, "APL", "EPG"))]))
     take("descendentes", dn)
-    # sensory: taste, touch and vibration first (the world produces those channels), then the
-    # ORNs by how much they reach the descending neurons
-    prio = pos(ids_of(a, "GRN_labellar", "GRN_pharyngeal", "antennal_mech", "JO_AB"))
-    reach_dn = spread(PT, dn, 3)
-    take("sensoriales", np.concatenate([prio, sens]), CAP_SENSORY,
-         np.where(np.isin(np.arange(n), prio), 1e9, reach_dn))
-    h1 = topk(post, pre, w, n, anchors, 40)
-    h2 = topk(post, pre, w, n, np.unique(h1), 12)
+    # sensory: taste, touch, vibration and every olfactory receptor first; then the leg taste and
+    # proprioceptive neurons that reach the descending neurons the most
+    prio = pos(ids_of(a, "GRN_labellar", "GRN_pharyngeal", "antennal_mech", "JO_AB", "ORN"))
+    key = np.where(np.isin(np.arange(n), prio), 1e9, reach_dn)
+    take("sensoriales", prio, None)
+    take("gusto_pata", pos(ids_of(a, "GRN_leg")), CAP_GRN_LEG, key)
+    take("propioceptores_pata", pos(ids_of(a, "PROP_leg")), CAP_PROP_LEG, key)
+    take("propioceptores_halterio", pos(ids_of(a, "PROP_haltere")), CAP_PROP_HALTERE, key)
+    mono = np.where(np.isin(nt, list(MONO)) & ~np.isin(sc, ["visual_centrifugal", "ol_intrinsic"]))[0]
+    take("monoaminergicas", mono)
+    take("lobulo_antenal", pos(ids_of(a, "ALPN", "ALLN")))
+    pn = pos(ids_of(a, "ALPN"))
+    from_pn = inflow(pn)
+    take("cuerno_lateral", pos(ids_of(a, "LH")), CAP_LH, from_pn)
+    take("cuerpo_fungiforme", pos(ids_of(a, "MBON", "DAN")))
+    take("celulas_de_Kenyon", pos(ids_of(a, "KC")), CAP_KC, from_pn)
+    take("complejo_central", pos(ids_of(a, "CX")), CAP_CX, reach_dn)
+    state = pos(ids_of(a, "ENDO", "ENS", "SEZPN"))
+    take("estado_interno", state)
+    to_state = spread(P, pos(ids_of(a, "NUTRIENT", "ENS")), 1) + spread(PT, pos(ids_of(a, "ENDO")), 1)
+    take("socios_estado_interno", np.where(to_state > 0)[0], CAP_STATE, to_state)
+    h1 = topk(post, pre, w, n, anchors, 60)
+    h2 = topk(post, pre, w, n, np.unique(h1), 16)
     take("socios_de_anclas", np.concatenate([h1, h2]), CAP_PARTNERS)
     for name, (src, dst) in PATHWAYS.items():
         k = spread(P, pos(ids_of(a, *src)), 4) * spread(PT, pos(ids_of(a, *dst)), 4)
@@ -140,14 +176,13 @@ def select(df, a, pre, post, w, target):
     vnc = np.where(np.isin(sc, ["vnc_intrinsic", "ascending_neuron"]))[0]
     pk = spread(P, dn, 2) * spread(PT, mn, 2)
     take("premotoras", vnc[pk[vnc] > 0], CAP_PREMOTOR, pk)
-    take("cuerpo_fungiforme", pos(ids_of(a, "MBON", "DAN")), CAP_MB)
     take("relleno", np.where(~taken & (score > 0))[0], target - int(taken.sum()))
     return chosen, taken
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--target", type=int, default=8000)
+    ap.add_argument("--target", type=int, default=20000)
     ap.add_argument("--min-w", type=int, default=3)
     ap.add_argument("--out", default=str(ART / "brain.npz"))
     a_ = ap.parse_args()
@@ -205,8 +240,7 @@ def main():
     # checks
     A = sp.csr_matrix((np.ones(len(w), np.int8), (q, p)), shape=(n, n))
     seen = np.zeros(n, bool)
-    sens_local = remap[np.searchsorted(ids, ids_of(anchors, "ORN", "JO_AB", "antennal_mech",
-                                                    "GRN_labellar", "GRN_pharyngeal", "GRN_leg"))]
+    sens_local = remap[np.searchsorted(ids, ids_of(anchors, *SENSORY_ALL))]
     sens_local = sens_local[sens_local >= 0]
     seen[sens_local] = True
     front = seen.copy()
@@ -228,7 +262,7 @@ def main():
         a_.out, indptr=indptr, indices=p, w=w, row_scale=(1.0 / np.maximum(rs, 1.0)).astype(np.float32),
         sign=sub["sign"].to_numpy().astype(np.int8), klass=klass, body_id=sub["bodyId"].to_numpy(),
         superclass=sub["superclass"].to_numpy().astype(str), cell_type=sub["type"].to_numpy().astype(str),
-        side=sub["side"].to_numpy().astype(str), nt=nt, soma_xyz=soma, n=np.int64(n), **groups)
+        side=sub["side"].to_numpy().astype(str), instance=sub["instance"].to_numpy().astype(str), nt=nt, soma_xyz=soma, n=np.int64(n), **groups)
     counts = {k: int((klass == k).sum()) for k in np.unique(klass)}
     info = {"N": n, "aristas": int(len(w)), "cupos": {k: int(len(v)) for k, v in chosen.items()},
             "clases": counts, "inhibitorias": round(float((sub["sign"] < 0).mean()), 4), "checks": checks,
@@ -241,13 +275,14 @@ def main():
 
 
 def report(info):
-    L = ["# Subcircuito de 8.000 neuronas", "",
+    L = [f"# Subcircuito de {info['N']:,} neuronas".replace(",", "."), "",
          f"**N = {info['N']:,}** neuronas reales de MaleCNS v1.0 · **{info['aristas']:,} conexiones** (>= 3 sinapsis).",
          "", "## Por qué se eligieron así", "",
          "La selección anterior (entradas sensoriales -> descendentes en <= 3 saltos) no tenía **ninguna**",
          "motoneurona, ni MDN, ni la fibra gigante, ni DNp09, ni receptores olfativos. Esas neuronas no",
-         "podían mover las patas, así que un guion tenía que hacerlo. Ahora las 8.000 se eligen por cupos",
-         "de función para que estén las que perciben, las que deciden y las que mueven.", "",
+         "podían mover las patas, así que un guion tenía que hacerlo. Ahora se eligen por cupos de función",
+         "para que estén las que perciben, las que deciden y las que mueven, y los circuitos completos del",
+         "olfato, el cuerpo fungiforme, el complejo central y el estado interno.", "",
          "| Cupo | Neuronas |", "|---|---:|"]
     L += [f"| {k} | {v:,} |" for k, v in info["cupos"].items()]
     L += ["", "| Clase | Neuronas |", "|---|---:|"]

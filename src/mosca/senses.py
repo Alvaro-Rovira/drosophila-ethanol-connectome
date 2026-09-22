@@ -1,12 +1,16 @@
 """What the fly senses, injected into its real receptor neurons.
 
-  olfato   odour at each antenna -> left / right olfactory receptor neurons (ORN)
+  olfato   odour of each substance at each antenna -> left / right olfactory receptor neurons, by
+           glomerulus (ORN_<glomerulus>): each substance has its own blend (configs/alcohol.yaml)
   gusto    sweet / bitter at the mouthparts -> labellar and pharyngeal gustatory neurons
   tacto    antennal touch (walls) -> left / right antennal mechanosensory neurons
   vibración a knock on the table -> Johnston organ (JO-A/B)
   arousal  a constant tonic drive to the monoaminergic neurons, so the fly is awake (ARBITRARIO)
-  propiocepción  own speed, turn and height -> other sensory neurons with a fixed seed (ARBITRARIO:
-           there are no identified proprioceptors for this in the subcircuit)
+  propiocepción  own walking speed -> leg proprioceptors (chordotonal, campaniform, hair plates),
+           only while standing on the ground; own turning -> haltere proprioceptors
+  brújula  own heading -> E-PG neurons, as a bump over their protocerebral-bridge glomerulus
+           (SIMPLIFICACIÓN: without vision the heading is injected there directly)
+  hambre   gain of the sweet (up) and bitter (down) receptors (see gut.py; hormonal, not synaptic)
 
 Gustatory neurons are annotated by organ, not by taste. Which ones carry "sweet" and which "bitter"
 is decided ONCE from the wiring itself: each gustatory type is stimulated alone and classified by
@@ -23,7 +27,6 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 SPLIT = ROOT / "artifacts" / "taste_split.json"
 C_REF = 0.02
-N_ODOR = 24
 
 
 def _split(idx, n, rng):
@@ -46,29 +49,50 @@ def cat(*ls):
     return np.unique(np.concatenate(ls)) if ls else np.array([], np.int64)
 
 
+def _epg_angle(instance: str):
+    """'EPG(PB08)_R3' -> heading angle of its glomerulus (8 per side tile 360 degrees)."""
+    import re
+    m = re.search(r"_([LR])(\d)$", instance)
+    if not m or int(m.group(2)) > 8:
+        return None
+    return (int(m.group(2)) - 1) * math.pi / 4
+
+
 class Senses:
-    def __init__(self, brain, I0: float = 4.0, seed: int = 21):
+    def __init__(self, brain, I0: float = 4.0, seed: int = 21, odors: dict | None = None):
         self.brain, self.I0 = brain, float(I0)
         rng = np.random.default_rng(seed)
         g = brain.group
-        self.odor = {s: _split(cat(g(f"ORN|{s}")), N_ODOR, rng) for s in ("L", "R")}
-        self.odor_centers = np.linspace(0.05, 1.0, N_ODOR)
+        types = np.asarray(brain.cell_type, str)
+        if odors is None:
+            from .config import load_yaml
+            cfg = load_yaml("alcohol.yaml")
+            odors = {k: {**cfg.get("fermentado", {}), **v} for k, v in cfg.get("olores", {}).items()}
+        self.odors = odors
+        # ORNs of each glomerulus on each side (U: bilateral / unknown side, gets the mean)
+        self.orn = {s: {} for s in ("L", "R", "U")}
+        for s in ("L", "R", "U"):
+            idx = cat(g(f"ORN|{s}"))
+            for t in np.unique(types[idx]):
+                self.orn[s][t[4:]] = idx[types[idx] == t]
         self.gust = cat(g("GRN_labellar|L"), g("GRN_labellar|R"), g("GRN_pharyngeal|L"),
                         g("GRN_pharyngeal|R"))
         self.sweet, self.bitter = self._taste_split()
         self.touch = {s: cat(g(f"antennal_mech|{s}")) for s in ("L", "R")}
         self.vib = cat(g("JO_AB|L"), g("JO_AB|R"), g("JO_AB|U"))
         self.arousal = np.where(brain.is_mono)[0]
-        used = np.zeros(brain.N, bool)
-        for arr in (*self.odor["L"], *self.odor["R"], self.gust, self.touch["L"], self.touch["R"],
-                    self.vib, self.arousal):
-            used[arr] = True
-        free = rng.permutation(np.where((brain.klass == "sensory") & ~used)[0])[:3 * 12 * 6]
-        parts = np.array_split(free, 3)
-        self.prop = [_split(p, 12, rng) for p in parts]
-        self.prop_centers = [np.linspace(-0.3, 1.0, 12), np.linspace(-1, 1, 12), np.linspace(0, 1, 12)]
-        self.inputs = cat(*self.odor["L"], *self.odor["R"], self.gust, self.touch["L"], self.touch["R"],
-                          self.vib, self.arousal, *[a for p in self.prop for a in p])
+        legp = cat(g("PROP_leg|L"), g("PROP_leg|R"), g("PROP_leg|U"))
+        halt = cat(g("PROP_haltere|L"), g("PROP_haltere|R"), g("PROP_haltere|U"))
+        self.prop = [_split(legp, 12, rng), _split(halt, 12, rng)]
+        self.prop_centers = [np.linspace(-0.3, 1.0, 12), np.linspace(-1, 1, 12)]
+        epg = cat(g("EPG|L"), g("EPG|R"))
+        inst = np.asarray(getattr(brain, "instance", np.array([""] * brain.N)), str)
+        ang = [(_epg_angle(inst[i]), i) for i in epg]
+        self.epg = np.array([i for a, i in ang if a is not None], np.int64)
+        self.epg_angle = np.array([a for a, i in ang if a is not None], np.float32)
+        allorn = [a for s in self.orn.values() for a in s.values()]
+        self.inputs = cat(*allorn, self.gust, self.touch["L"], self.touch["R"], self.vib, self.arousal,
+                          *[a for p in self.prop for a in p], self.epg)
 
     # ------------------------------------------------------------------ taste split
     def _taste_split(self):
@@ -110,24 +134,33 @@ class Senses:
 
     # ------------------------------------------------------------------ encoding
     def encode(self, obs: dict) -> np.ndarray:
-        """obs: c_l, c_r, sweet, bitter, touch_l, touch_r, vib, arousal, v, w, z, olf_x."""
+        """obs: c_l, c_r, odor_lr, sweet, bitter, touch_l, touch_r, vib, arousal, v, w, z, th,
+        ground, olf_x, sweet_x, bitter_x."""
         u = np.zeros(self.brain.N, np.float32)
         I0 = self.I0
         gain = obs.get("olf_x", 1.0)
-        for side, c in (("L", obs["c_l"]), ("R", obs["c_r"])):
-            val = log_c(c)
-            if val <= 0.01:
-                continue
-            # tuning curves AND a monotonic gain: a real ORN fires faster with more odorant, and
-            # without that the 1% left-right difference falls inside one channel and vanishes
-            act = _bell(val, self.odor_centers, 0.35) * val
-            for k, idx in enumerate(self.odor[side]):
-                if len(idx):
-                    u[idx] += I0 * gain * act[k]
+        lr = obs.get("odor_lr") or {}
+        if lr:
+            glom = {"L": {}, "R": {}}
+            for kind, (cl, cr) in lr.items():
+                prof = self.odors.get(kind, {})
+                for side, c in (("L", cl), ("R", cr)):
+                    val = log_c(c)
+                    if val <= 0.01:
+                        continue
+                    for gl, wgt in prof.items():
+                        glom[side][gl] = glom[side].get(gl, 0.0) + wgt * val
+            for side in ("L", "R", "U"):
+                for gl, idx in self.orn[side].items():
+                    a = (glom["L"].get(gl, 0.0) + glom["R"].get(gl, 0.0)) / 2 if side == "U" \
+                        else glom[side].get(gl, 0.0)
+                    if a > 0:
+                        u[idx] += I0 * gain * min(a, 1.5)
+        sx, bx = obs.get("sweet_x", 1.0), obs.get("bitter_x", 1.0)
         if obs["sweet"] > 1e-3 and len(self.sweet):
-            u[self.sweet] += I0 * obs["sweet"]
+            u[self.sweet] += I0 * sx * obs["sweet"]
         if obs["bitter"] > 1e-3 and len(self.bitter):
-            u[self.bitter] += I0 * obs["bitter"]
+            u[self.bitter] += I0 * bx * obs["bitter"]
         for side, key in (("L", "touch_l"), ("R", "touch_r")):
             if obs[key] > 1e-3 and len(self.touch[side]):
                 u[self.touch[side]] += I0 * obs[key]
@@ -135,9 +168,14 @@ class Senses:
             u[self.vib] += I0 * obs["vib"]
         if obs.get("arousal", 0.0) > 0:
             u[self.arousal] += I0 * 0.5 * obs["arousal"]
-        for pools, centers, val in zip(self.prop, self.prop_centers, (obs["v"], obs["w"], obs["z"])):
+        vals = (obs["v"] if obs.get("ground", True) else None, obs["w"])
+        for pools, centers, val in zip(self.prop, self.prop_centers, vals):
+            if val is None:
+                continue                      # in the air the legs carry no load
             act = _bell(val, centers, 0.2)
             for k, idx in enumerate(pools):
                 if len(idx) and act[k] > 1e-3:
                     u[idx] += I0 * 0.5 * act[k]
+        if len(self.epg) and "th" in obs:
+            u[self.epg] += I0 * 0.5 * np.exp(2.5 * (np.cos(obs["th"] - self.epg_angle) - 1.0))
         return u

@@ -2,72 +2,72 @@
  "real": [
   {
    "a": 0.0,
-   "velocidad": 39.5,
-   "anda": 0.908,
-   "giro_por_distancia": 0.0495,
+   "velocidad": 34.9,
+   "anda": 0.891,
+   "giro_por_distancia": 0.0524,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.917
+   "alcanza_y_bebe": 1.0
   },
   {
    "a": 0.15,
-   "velocidad": 44.8,
-   "anda": 0.933,
-   "giro_por_distancia": 0.0379,
+   "velocidad": 41.2,
+   "anda": 0.925,
+   "giro_por_distancia": 0.0358,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.708
+   "alcanza_y_bebe": 1.0
   },
   {
    "a": 0.3,
-   "velocidad": 74.2,
-   "anda": 0.939,
-   "giro_por_distancia": 0.0317,
+   "velocidad": 40.3,
+   "anda": 0.845,
+   "giro_por_distancia": 0.0358,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.25
+   "alcanza_y_bebe": 0.792
   },
   {
    "a": 0.45,
-   "velocidad": 27.0,
-   "anda": 0.984,
-   "giro_por_distancia": 0.1123,
+   "velocidad": 52.8,
+   "anda": 0.949,
+   "giro_por_distancia": 0.0431,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.0
+   "alcanza_y_bebe": 0.333
   },
   {
    "a": 0.6,
-   "velocidad": 16.8,
-   "anda": 0.848,
-   "giro_por_distancia": 0.223,
+   "velocidad": 50.1,
+   "anda": 0.961,
+   "giro_por_distancia": 0.0516,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.0
+   "alcanza_y_bebe": 0.125
   },
   {
    "a": 0.75,
-   "velocidad": 1.2,
-   "anda": 0.063,
-   "giro_por_distancia": 0.3613,
-   "en_el_suelo": 0.83,
-   "sedada": 0.687,
+   "velocidad": 1.5,
+   "anda": 0.041,
+   "giro_por_distancia": 0.0475,
+   "en_el_suelo": 0.954,
+   "sedada": 0.879,
    "alcanza_y_bebe": 0.0
   },
   {
    "a": 0.9,
-   "velocidad": 0.1,
-   "anda": 0.003,
-   "giro_por_distancia": 0.2793,
-   "en_el_suelo": 0.991,
-   "sedada": 0.916,
+   "velocidad": 0.2,
+   "anda": 0.007,
+   "giro_por_distancia": 0.0685,
+   "en_el_suelo": 0.993,
+   "sedada": 0.917,
    "alcanza_y_bebe": 0.0
   },
   {
    "a": 1.0,
-   "velocidad": 0.0,
-   "anda": 0.002,
-   "giro_por_distancia": 0.3147,
+   "velocidad": 0.1,
+   "anda": 0.006,
+   "giro_por_distancia": 0.0707,
    "en_el_suelo": 0.993,
    "sedada": 0.917,
    "alcanza_y_bebe": 0.0

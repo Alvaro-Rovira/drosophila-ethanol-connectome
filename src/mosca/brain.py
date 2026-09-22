@@ -7,6 +7,11 @@
 W = synapse counts normalised per postsynaptic neuron; sign per presynaptic neuron from its
 neurotransmitter. **The wiring is never modified.** Ethanol never touches the body: it only changes
 m_j, by neurotransmitter class, and adds synaptic noise (see configs/alcohol.yaml).
+
+The ONE exception to fixed wiring, off by default: dopamine-gated depression of the Kenyon cell ->
+MBON synapses (mushroom-body learning; Hige et al. 2015). A KC -> MBON synapse weakens when the KC
+is active while the dopaminergic neurons that innervate that MBON's compartment fire above their
+own recent baseline, and it recovers slowly. Only those synapses change, never their sign.
 """
 from __future__ import annotations
 
@@ -35,6 +40,8 @@ class BrainParams:
     f_brain: float = 15.0
     adaptation: bool = True
     seed: int = 5
+    kc_theta: float = 0.9     # Kenyon cells fire only with coincident input (high threshold,
+                              # Turner et al. 2008): ~9% respond to an odour, as in real flies
 
 
 class Brain:
@@ -50,6 +57,7 @@ class Brain:
         self.superclass = z["superclass"]
         self.cell_type = z["cell_type"]
         self.side = z["side"]
+        self.instance = z["instance"] if "instance" in z.files else np.array([""] * self.N)
         self.nt = z["nt"].astype(str)
         self.body_id = z["body_id"]
         self.soma_xyz = z["soma_xyz"]
@@ -66,6 +74,8 @@ class Brain:
         rng = np.random.default_rng(self.p.seed)
         s = 0.35
         self.b = (self.p.b * np.exp(rng.normal(0, s, self.N) - s * s / 2)).astype(np.float32)
+        kc = np.concatenate([self.group(f"KC|{s}") for s in "LRU"]).astype(np.int64)
+        self.b[kc] -= self.p.kc_theta
         self.tau = np.array([TAU_MS[k] for k in self.klass], np.float32)
         self.beta = (np.array([BETA[k] for k in self.klass], np.float32) if self.p.adaptation
                      else np.zeros(self.N, np.float32))
@@ -81,7 +91,7 @@ class Brain:
         return self.groups.get(name, np.array([], np.int32))
 
     def init_state(self, B: int = 1) -> dict:
-        return {"h": np.tile(self.b[:, None], (1, B)).astype(np.float32),
+        return {"h": np.tile(np.maximum(self.b, 0)[:, None], (1, B)).astype(np.float32),
                 "a": np.zeros((self.N, B), np.float32)}
 
     def class_multiplier(self, exc_x=1.0, inh_x=1.0, mono_x=1.0) -> np.ndarray:
@@ -114,7 +124,57 @@ class Brain:
         h += self.k_h[:, None] * (x - h)
         if self.p.adaptation:
             st["a"] += self.k_a * (h - st["a"])
+        if B == 1 and getattr(self, "pl", None) is not None:
+            self.learn(h[:, 0], m if (m is None or m.ndim == 1) else m[:, 0], 1.0 / self.p.f_brain)
         return h
+
+    # ------------------------------------------------------------------ mushroom-body learning
+    def enable_plasticity(self, eta: float = 0.5, tau_rec_s: float = 600.0, tau_base_s: float = 10.0):
+        """Makes this Brain's KC -> MBON synapses plastic. The matrix is copied: other Sims sharing
+        the original file are not affected."""
+        g = lambda n: np.concatenate([self.group(f"{n}|{s}") for s in "LRU"]).astype(np.int64)
+        kc, mbon, dan = g("KC"), g("MBON"), g("DAN")
+        self.A = self.A.copy()
+        is_kc = np.zeros(self.N, bool)
+        is_kc[kc] = True
+        rows = np.repeat(np.arange(self.N), np.diff(self.A.indptr))
+        is_mb = np.zeros(self.N, bool)
+        is_mb[mbon] = True
+        sel = np.where(is_mb[rows] & is_kc[self.A.indices])[0]
+        self.pl = {"idx": sel, "row": rows[sel], "col": self.A.indices[sel], "w0": self.A.data[sel].copy(),
+                   "f": np.ones(len(sel), np.float32), "mbon": mbon, "dan": dan,
+                   "D": self.A[mbon][:, dan].tocsr(), "base": None, "eta": eta, "tau_rec": tau_rec_s,
+                   "tau_base": tau_base_s, "da": np.zeros(len(mbon), np.float32)}
+        pos = np.full(self.N, -1, np.int64)
+        pos[mbon] = np.arange(len(mbon))
+        self.pl["row_pos"] = pos[self.pl["row"]]
+
+    def learn(self, h_col: np.ndarray, m: np.ndarray | None, dt: float):
+        pl = getattr(self, "pl", None)
+        if pl is None:
+            return
+        out = h_col[pl["dan"]] * (m[pl["dan"]] if m is not None else 1.0)
+        d = pl["D"] @ out                                  # dopamine reaching each MBON's compartment
+        if pl["base"] is None:
+            pl["base"] = d.copy()
+        # phasic dopamine: relative rise over the compartment's own recent baseline (DANs fire
+        # tonically; only the burst above it teaches)
+        phasic = np.maximum(0.0, d / np.maximum(pl["base"], 1e-3) - 1.0)
+        pl["base"] += (1 - math.exp(-dt / pl["tau_base"])) * (d - pl["base"])
+        pl["da"] = phasic.astype(np.float32)
+        k = h_col[pl["col"]]
+        f = pl["f"]
+        f -= pl["eta"] * phasic[pl["row_pos"]] * k * f * dt
+        f += (1.0 - f) * dt / pl["tau_rec"]
+        np.clip(f, 0.05, 1.0, out=f)
+        self.A.data[pl["idx"]] = pl["w0"] * f
+
+    def reset_learning(self):
+        pl = getattr(self, "pl", None)
+        if pl is not None:
+            pl["f"][:] = 1.0
+            pl["base"] = None
+            self.A.data[pl["idx"]] = pl["w0"]
 
     def info(self) -> dict:
         return {"file": Path(self.path).name, "N": self.N, "edges": self.nnz, "f_brain": self.p.f_brain}

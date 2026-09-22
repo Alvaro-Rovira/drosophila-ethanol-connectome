@@ -3,6 +3,9 @@
 # motoneuronas reales. Curvas lineales a trozos sobre el nivel a (0 = sobria, 1 = máximo).
 k_abs: 0.25          # 1/s, buche -> hemolinfa
 k_elim: 0.0012       # 1/s, eliminación lineal (FICCIÓN: acelerada para que se vea en minutos)
+# Exposición a vapor de etanol (como en el inebriómetro o el ensayo de LORR): entra en la hemolinfa
+# sin que la mosca beba. u.a. por segundo de exposición (FICCIÓN de escala).
+vapor_rate: 0.012
 hangover: {high: 0.5, low: 0.15, duration_s: 30}   # solo etiqueta de la interfaz, no actúa
 
 # Etapas: SOLO son el nombre que la interfaz pone a cada nivel. No disparan nada.
@@ -21,6 +24,34 @@ drinks:
   - {id: shot,     name: "Chupito de licor", emoji: "🥃", color: "#cfe8ff", dose: 0.25, abv: 0.25, sugar: 0.80, impurity: 0.0}
   - {id: tequila,  name: "Tequila doble", emoji: "🌵", color: "#e8c070", dose: 0.30, abv: 0.40, sugar: 0.30, impurity: 0.05}
   - {id: garrafon, name: "Garrafón",      emoji: "🧪", color: "#5fd94a", dose: 0.45, abv: 0.40, sugar: 0.20, impurity: 0.25}
+
+# Olor de cada sustancia: peso sobre los glomérulos (tipos de receptor olfativo, ORN_<glomérulo>).
+# FICCIÓN con anclas: todas comparten el componente de fruta fermentada / vinagre (DM1, DM4, VA2,
+# DP1m; Semmelhack y Wang 2009); cada una añade uno propio inventado; el garrafón huele además por
+# DA2 (geosmina, aversivo; Stensmyr et al. 2012) y V (CO2, aversivo; Suh et al. 2004).
+fermentado: {DM1: 1.0, DM4: 0.8, VA2: 0.7, DP1m: 0.6}
+olores:
+  beer:     {DM3: 0.8, DM5: 0.5}
+  wine:     {DL1: 0.8, DC1: 0.6}
+  shot:     {DM2: 0.9, DL5: 0.6}
+  tequila:  {DC3: 0.9, VM3: 0.5}
+  garrafon: {DA2: 1.0, V: 0.8, DC3: 0.4}
+
+# Estómago. El hambre no llega a MN9 por sinapsis en el conectoma (las neuronas entéricas y las
+# sensoras de nutrientes no tienen camino sináptico a MN9): en la mosca real actúa por hormonas y
+# neuromoduladores que suben la sensibilidad de las gustativas dulces y bajan la de las amargas
+# (Inagaki et al. 2012, 2014). Se modela así: el hambre es una GANANCIA de esas receptoras.
+estomago:
+  buche_por_gota: 0.5       # llenado del buche por gota entera bebida
+  vaciado: 0.02             # 1/s, buche -> intestino
+  metabolismo: 0.01         # 1/s, consumo del azúcar absorbido (FICCIÓN: acelerado, como el etanol)
+  azucar_ref: 0.6           # azúcar en hemolinfa con la que la mosca está saciada
+  azucar_inicial: 0.1       # empieza con hambre, como en los experimentos
+  estiramiento: 0.6         # saciedad por buche lleno (Gelperin 1971, moscarda)
+  # ganancia de las gustativas dulces, saciada -> hambrienta. Saciada: MN9 con cerveza queda por
+  # debajo de su umbral (medido: 0,48 frente a 0,68), como la PER a azúcar medio en moscas alimentadas
+  dulce_x: [0.2, 1.4]
+  amargo_x: [1.2, 0.8]      # ganancia de las gustativas amargas, saciada -> hambrienta
 
 curve_points: [0.0, 0.3, 0.6, 0.9, 1.0]
 neural:

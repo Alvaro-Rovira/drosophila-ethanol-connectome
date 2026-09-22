@@ -27,7 +27,7 @@ GROUPS = LEGS + ["MN_wing_power|L", "MN_wing_power|R", "MN_wing_steer|L", "MN_wi
                  "MN_neck|L", "MN_neck|R", "MN9|L", "MN9|R", "DNp09|L", "DNp09|R", "DNa01|L",
                  "DNa01|R", "DNa02|L", "DNa02|R", "DNg13|L", "DNg13|R", "MDN|L", "MDN|R", "DNp01|L",
                  "DNp01|R", "DNg11|L", "DNg11|R", "DNg12|L", "DNg12|R", "pIP10|L", "pIP10|R",
-                 "DNp15|L", "DNp15|R"]
+                 "DNp15|L", "DNp15|R", "MBON|L", "MBON|R"]
 
 
 class Pools:

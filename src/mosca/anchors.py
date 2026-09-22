@@ -91,6 +91,27 @@ def build(df) -> dict:
     a["GRN_leg"] = _sel(df, grn & (sub == "leg bristle"), "gustatory, pata", "alta", "gusto tarsal")
     a["MBON"] = _sel(df, t.str.startswith("MBON"), "type MBON*", "alta", "salida del cuerpo fungiforme")
     a["DAN"] = _sel(df, t.str.match(r"(?:PAM|PPL|PPM)\d"), "type PAM/PPL/PPM", "alta", "dopaminérgicas")
+    # 20.000: complete olfactory pathway, mushroom body, central complex, internal state
+    a["ALPN"] = _sel(df, cl == "ALPN", "class ALPN", "alta", "neuronas de proyección del lóbulo antenal")
+    a["ALLN"] = _sel(df, cl.isin(["ALLN", "ALIN", "ALON"]), "class ALLN/ALIN/ALON", "alta",
+                     "interneuronas locales y de salida del lóbulo antenal")
+    a["LH"] = _sel(df, t.str.match(r"^LH"), "type LH*", "alta", "cuerno lateral (olor innato)")
+    a["KC"] = _sel(df, cl == "Kenyon_Cell", "class Kenyon_Cell", "alta", "células de Kenyon")
+    a["APL"] = _sel(df, t == "APL", "type == 'APL'", "alta", "inhibición global del cuerpo fungiforme")
+    a["CX"] = _sel(df, cl == "CX", "class CX", "alta", "complejo central")
+    a["EPG"] = _sel(df, t.str.startswith("EPG"), "type EPG*", "alta", "brújula (E-PG)")
+    a["ENDO"] = _sel(df, sc.isin(["cb_endocrine", "vnc_endocrine"]), "superclass endocrine", "alta",
+                     "neurosecretoras (IPC, DH44, Hugin, CAPA, LK...)")
+    a["NUTRIENT"] = _sel(df, t.isin(["IPC", "DH44"]), "type IPC / DH44", "media",
+                         "sensoras de nutrientes en hemolinfa (azúcar)")
+    a["ENS"] = _sel(df, sc == "ENS", "superclass ENS", "media", "sistema nervioso entérico (llenado del buche)")
+    a["SEZPN"] = _sel(df, cl == "SEZPN", "class SEZPN", "media", "proyección desde el ganglio subesofágico")
+    prop = cl == "mechanosensory_proprioceptive"
+    a["PROP_leg"] = _sel(df, prop & sub.isin(["leg", "chordotonal organ", "campaniform sensilla", "hair plate"])
+                         & (sc == "vnc_sensory"), "proprioceptivas de patas (VNC)", "alta",
+                         "propioceptores de las patas")
+    a["PROP_haltere"] = _sel(df, prop & (sub == "haltere"), "proprioceptivas del halterio", "alta",
+                             "halterios (giro del cuerpo)")
     return a
 
 

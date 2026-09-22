@@ -55,8 +55,8 @@
     if (m.down) return ['Caída', 'bad'];
     const a = m.a;
     if (a < 0.15) return ['Basal', 'good'];
-    if (a < 0.45) return ['Estimulación', 'warn'];
-    if (a < 0.75) return ['Ataxia', 'warn'];
+    if (a < 0.6) return ['Estimulación', 'warn'];
+    if (a < 0.7) return ['Hipotonía motora', 'warn'];
     return ['Sedación', 'bad'];
   }
 
@@ -207,8 +207,8 @@
       g.fillText(lab, pad.l - 4, Y(v));
     }
     g.setLineDash([3, 3]);
-    for (const v of [0.15, 0.45, 0.75]) {
-      g.strokeStyle = v === 0.75 ? 'rgba(226,92,92,.55)' : 'rgba(224,163,64,.4)';
+    for (const v of [0.15, 0.6, 0.7]) {
+      g.strokeStyle = v === 0.7 ? 'rgba(226,92,92,.55)' : 'rgba(224,163,64,.4)';
       g.beginPath(); g.moveTo(pad.l, Y(v) + .5); g.lineTo(w - pad.r, Y(v) + .5); g.stroke();
     }
     g.setLineDash([]);
@@ -361,6 +361,7 @@
       else if (fx === 'escape') log(`Despegue · DNp01 ${fmt(ch.DNp01, 0)} × reposo (umbral ${fmt(hello.thresholds.DNp01, 0)})`, 'ev-neuro');
       else if (fx === 'tap') log('Estímulo mecánico aplicado (órgano de Johnston)', 'ev-user');
       else if (fx === 'shower') log('Lavado: etanol a 0', 'ev-user');
+      else if (fx === 'vapor') log('Exposición a vapor de etanol: entra en la hemolinfa sin ingesta', 'ev-eth');
     }
     if (m.sip && !prevSip) {
       const p = nearestPuddle(m);
@@ -438,7 +439,7 @@
     const [ph, cls] = phaseOf(m);
     const phEl = $('#phase'); phEl.textContent = ph;
     phEl.style.color = cls === 'bad' ? C.alert : cls === 'warn' ? C.eth : C.ok;
-    const eth = $('#mEth'); eth.textContent = fmt(m.a, 3); eth.className = 'v mono' + (m.a >= 0.75 ? ' bad' : m.a >= 0.15 ? ' warn' : '');
+    const eth = $('#mEth'); eth.textContent = fmt(m.a, 3); eth.className = 'v mono' + (m.a >= 0.7 ? ' bad' : m.a >= 0.15 ? ' warn' : '');
     const pose = $('#mPose');
     pose.textContent = m.lorr ? 'LORR' : m.down ? 'Caída' : f.z > 0.1 ? 'En vuelo' : 'Erguida';
     pose.className = 'v' + (m.lorr || m.down ? ' bad' : ' good');
@@ -450,6 +451,14 @@
     per.className = 'v' + (m.sip ? ' good' : '');
     $('#mPerNote').textContent = m.sip ? 'ingesta' : '';
     $('#mDrunk').textContent = intakes;
+    const hu = $('#mHunger'); hu.textContent = fmt(m.hunger, 2);
+    hu.className = 'v mono' + (m.hunger < 0.2 ? ' good' : '');
+    $('#mHungerNote').textContent = m.hunger < 0.2 ? 'saciada' : m.hunger > 0.7 ? 'hambrienta' : '';
+    $('#mCrop').textContent = fmt(m.crop, 2);
+    $('#mMem').textContent = fmt(m.mb * 100, 1);
+    const vb = $('#vapor');
+    if (m.vapor > 0) { vb.classList.add('on'); vb.textContent = `Vapor de etanol · ${Math.ceil(m.vapor)} s`; }
+    else if (vb.classList.contains('on')) { vb.classList.remove('on'); vb.textContent = 'Vapor de etanol (20 s)'; }
     $('#hud').textContent = `x ${fmt(f.x, 0)} · y ${fmt(f.y, 0)} · θ ${fmt(f.th, 2)} rad · v ${fmt(f.v, 1)} u/s · ω ${fmt(f.w, 2)} rad/s · z ${fmt(f.z, 2)}`;
     if (m.eth) updateSyn(m.eth);
     if (m.demo !== demoOn) {
@@ -462,16 +471,16 @@
   function csvRow(m) {
     const f = m.f;
     return [m.tt, m.a, f.x, f.y, f.th, f.z, f.v, f.w, m.lorr ? 'lorr' : m.down ? 'caida' : 'erguida', m.sip ? 1 : 0,
-      m.tone, ...(m.ch || [])].map((v) => typeof v === 'number' ? +v.toFixed(4) : v).join(',');
+      m.tone, m.hunger, m.crop, m.mb, m.vapor, ...(m.ch || [])].map((v) => typeof v === 'number' ? +v.toFixed(4) : v).join(',');
   }
   function exportCsv() {
     if (!csv.length) return;
-    const head = ['t_s', 'etanol', 'x', 'y', 'theta', 'z', 'v', 'w', 'postura', 'ingesta', 'tono_patas',
+    const head = ['t_s', 'etanol', 'x', 'y', 'theta', 'z', 'v', 'w', 'postura', 'ingesta', 'tono_patas', 'hambre', 'buche', 'memoria_kc_mbon', 'vapor_s',
       ...((hello && hello.channels) || []).map((c) => c.key.replace('|', '_'))].join(',');
     const blob = new Blob([head + '\n' + csv.join('\n') + '\n'], { type: 'text/csv' });
     const a = document.createElement('a');
     const d = new Date(), p = (n) => String(n).padStart(2, '0');
-    a.download = `exp-dm8k-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.csv`;
+    a.download = `exp-dm20k-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.csv`;
     a.href = URL.createObjectURL(blob); document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     log(`Datos exportados: ${csv.length} muestras a 10 Hz`, 'ev-user');
@@ -489,7 +498,7 @@
       const b = $('#rec'); b.classList.remove('on'); b.textContent = 'Grabar vídeo 10 s';
       const blob = new Blob(chunks, { type: rec.mimeType || type || 'video/webm' });
       const a = document.createElement('a');
-      a.download = `exp-dm8k-arena.${(rec.mimeType || type).includes('mp4') ? 'mp4' : 'webm'}`;
+      a.download = `exp-dm20k-arena.${(rec.mimeType || type).includes('mp4') ? 'mp4' : 'webm'}`;
       a.href = URL.createObjectURL(blob); document.body.append(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     };
@@ -537,6 +546,7 @@
   // ---------------------------------------------------------------- wiring
   $('#tap').addEventListener('click', () => { send({ t: 'tap' }); const b = $('#tap'); b.disabled = true; setTimeout(() => { b.disabled = false; }, 3000); });
   $('#shower').addEventListener('click', () => send({ t: 'reset' }));
+  $('#vapor').addEventListener('click', () => { send({ t: 'vapor' }); const b = $('#vapor'); b.disabled = true; setTimeout(() => { b.disabled = false; }, 10000); });
   $('#demo').addEventListener('click', () => send({ t: 'demo', on: !demoOn }));
   $('#csv').addEventListener('click', exportCsv);
   $('#rec').addEventListener('click', record);

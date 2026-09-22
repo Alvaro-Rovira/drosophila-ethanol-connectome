@@ -130,7 +130,8 @@ def test_ethanol_acting_only_on_synapses_makes_it_fall():
     assert s.world.fly.pose != "up"
 
 
-def test_low_dose_makes_it_faster():
+def test_moderate_dose_makes_it_faster():
+    """With 20.000 neurons the stimulation peaks around 0,45 (0,3 in the 8.000 version)."""
     def speed(a):
         out = []
         for seed in range(60, 66):
@@ -142,7 +143,7 @@ def test_low_dose_makes_it_faster():
                 path += abs(s.world.fly.v) * DT
             out.append(path / 20)
         return float(np.mean(out))
-    assert speed(0.3) > 1.2 * speed(0.0)
+    assert speed(0.45) > 1.2 * speed(0.0)
 
 
 def test_shuffled_wiring_cannot_find_the_drinks():
@@ -172,3 +173,49 @@ def test_brain_step_is_fast():
     for _ in range(60):
         s.brain_tick()
     assert (time.perf_counter() - t0) / 60 < 0.005
+
+
+def test_a_sated_fly_does_not_drink_the_beer():
+    """Hunger acts as the gain of the sweet and bitter receptors; MN9 decides."""
+    def sip(hunger, seed):
+        s = sim(seed)
+        s.gut.freeze(hunger)
+        return held_on(s, "beer")
+    assert sip(1.0, 91) * DT > 2.0 and sip(0.0, 92) * DT < 0.5
+
+
+def test_vapour_sedates_without_drinking():
+    s = sim(93)
+    s.alcohol.vapor_s = 80.0
+    for _ in range(int(90 / DT)):
+        s.step()
+    assert s.drunk == 0.0 and s.alcohol.a > 0.7 and s.world.fly.pose != "up"
+
+
+def test_kenyon_cells_code_sparsely():
+    from mosca.senses import Senses
+    se = Senses(BRAIN, 4.0)
+    kc = np.concatenate([BRAIN.group(f"KC|{x}") for x in "LR"])
+    obs = {"c_l": 0, "c_r": 0, "sweet": 0, "bitter": 0, "touch_l": 0, "touch_r": 0, "vib": 0,
+           "arousal": 1, "v": 0.3, "w": 0, "z": 0, "th": 0, "odor_lr": {"beer": (0.5, 0.5)}}
+    st = BRAIN.init_state(1)
+    for _ in range(60):
+        h = BRAIN.step(st, se.encode(obs))
+    frac = float((h[kc, 0] > 0.1).mean())
+    assert 0.02 < frac < 0.25
+
+
+def test_mushroom_body_learning_changes_only_kc_to_mbon():
+    br = load_brain()
+    br.enable_plasticity()
+    before = br.A.data.copy()
+    from mosca.senses import Senses
+    se = Senses(br, 4.0)
+    obs = {"c_l": 0, "c_r": 0, "sweet": 0.55, "bitter": 0, "touch_l": 0, "touch_r": 0, "vib": 0,
+           "arousal": 1, "v": 0.3, "w": 0, "z": 0, "th": 0, "odor_lr": {"beer": (0.9, 0.9)}}
+    st = br.init_state(1)
+    for k in range(90):
+        br.step(st, se.encode(obs), br.class_multiplier(1.0, 0.85, 1.0 + 0.3 * k / 90))
+    changed = np.where(br.A.data != before)[0]
+    assert len(changed) > 0 and np.isin(changed, br.pl["idx"]).all()
+    assert (br.A.data[changed] < before[changed]).all()

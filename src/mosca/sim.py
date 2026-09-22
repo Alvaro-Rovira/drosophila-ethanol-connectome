@@ -1,4 +1,4 @@
-"""One fly: senses -> 8.000 real neurons -> motor neurons -> body -> world. No script anywhere.
+"""One fly: senses -> real neurons of MaleCNS -> motor neurons -> body -> world. No script anywhere.
 
 Order of a body tick (30 Hz; the brain runs at 15 Hz and its commands are interpolated):
   1. ethanol kinetics
@@ -24,6 +24,7 @@ from .body import Body, MotorCfg, Pools
 from .brain import Brain, BrainParams
 from .config import ARTIFACTS, load_yaml
 from .expert import Expert
+from .gut import Gut
 from .readout import Readout, feature_index
 from .senses import Senses
 from .world import DT, FLY_Z, World
@@ -56,6 +57,7 @@ class Sim:
         self.world = World(self.rng)
         self.world.place_fly()
         self.alcohol = Alcohol(self.alc_cfg)
+        self.gut = Gut(self.alc_cfg)
         self.senses = senses or Senses(brain, self.reg["I0"])
         self.pools = Pools(brain, norms)
         self.body = Body(motor)
@@ -94,7 +96,10 @@ class Sim:
         cl, cr = self.world.antennae()
         sweet, bitter, pud = self.world.taste()
         vmax = 110.0 + 130.0 * f.z
-        return {"c_l": cl, "c_r": cr, "sweet": sweet, "bitter": bitter, "contact": pud is not None,
+        sx, bx = self.gut.gains()
+        return {"c_l": cl, "c_r": cr, "odor_lr": dict(self.world.odor_lr), "sweet": sweet, "bitter": bitter,
+                "contact": pud is not None, "sweet_x": sx, "bitter_x": bx, "hunger": self.gut.hunger,
+                "th": f.th, "ground": f.z <= FLY_Z and f.pose == "up",
                 "touch_l": f.touch_l, "touch_r": f.touch_r, "vib": f.vib, "arousal": self.reg["arousal"],
                 "v": float(np.clip(f.v / vmax, -0.3, 1)), "w": float(np.clip(f.w / 5.0, -1, 1)),
                 "z": f.z, "olf_x": olf_x}
@@ -128,6 +133,7 @@ class Sim:
     def step(self, dt: float = DT):
         self.fx = []
         self.alcohol.update(dt)
+        self.gut.update(dt)
         self.acc += dt
         if self.acc >= self.period:
             self.acc -= self.period
@@ -149,6 +155,8 @@ class Sim:
         if got > 0:
             self.alcohol.drink(got)
             self.drunk += got
+        if self.world.last_take[0] > 0:
+            self.gut.drink(*self.world.last_take)
         self.t += dt
         self.n += 1
 

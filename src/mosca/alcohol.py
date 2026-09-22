@@ -14,6 +14,7 @@ class Alcohol:
         self.cfg = cfg
         self.k_abs = float(cfg["k_abs"])
         self.k_elim = float(cfg["k_elim"])
+        self.vapor_rate = float(cfg.get("vapor_rate", 0.0))
         hv = cfg["hangover"]
         self.h_high, self.h_low, self.h_dur = hv["high"], hv["low"], hv["duration_s"]
         pts = cfg["curve_points"]
@@ -28,6 +29,7 @@ class Alcohol:
         self.r = 0.0
         self.was_high = False
         self.peak = 0.0
+        self.vapor_s = 0.0
 
     def freeze(self, a=None, r=None):
         self.frozen_a = a
@@ -42,7 +44,9 @@ class Alcohol:
         if self.frozen_a is None:
             flow = self.k_abs * self.S * dt
             self.S = max(0.0, self.S - flow)
-            self.a = min(1.0, max(0.0, self.a + flow - self.k_elim * dt))
+            vap = self.vapor_rate * dt if self.vapor_s > 0 else 0.0
+            self.vapor_s = max(0.0, self.vapor_s - dt)
+            self.a = min(1.0, max(0.0, self.a + flow + vap - self.k_elim * dt))
         else:
             self.a = float(self.frozen_a)
         self.peak = max(self.peak, self.a)

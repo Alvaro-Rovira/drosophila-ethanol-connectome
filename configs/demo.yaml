@@ -1,53 +1,17 @@
-# Demo: el camarero no para. La mosca decide con MN9 si bebe: el tequila y el garrafón los
-# rechaza por amargos, así que la demo la emborracha con cerveza, vino y licor.
-puddle_distance: [22, 60]   # el camarero le deja la copa casi en las patas
+# Protocolo automático. Fase 1 (0-60 s): ingesta voluntaria. La mosca decide con MN9 si bebe y
+# se sacia (y el garrafón lo rechaza por amargo). Fase 2 (70-245 s): exposición a vapor de etanol en
+# pulsos de 20 s, como en el ensayo de pérdida del reflejo de enderezamiento: el etanol entra aunque
+# no beba, y se ve la progresión completa.
+puddle_distance: [22, 60]   # la gota se deja cerca de la mosca
 orders:
   - {t: 1, kind: beer}
-  - {t: 6, kind: wine}
-  - {t: 11, kind: shot}
-  - {t: 16, kind: beer}
-  - {t: 21, kind: wine}
-  - {t: 26, kind: shot}
-  - {t: 31, kind: beer}
+  - {t: 8, kind: wine}
+  - {t: 16, kind: shot}
+  - {t: 26, kind: beer}
   - {t: 36, kind: wine}
-  - {t: 41, kind: shot}
-  - {t: 46, kind: beer}
-  - {t: 51, kind: wine}
-  - {t: 56, kind: shot}
-  - {t: 61, kind: beer}
-  - {t: 66, kind: wine}
-  - {t: 71, kind: shot}
-  - {t: 76, kind: beer}
-  - {t: 81, kind: wine}
-  - {t: 86, kind: shot}
-  - {t: 91, kind: beer}
-  - {t: 96, kind: wine}
-  - {t: 101, kind: shot}
-  - {t: 106, kind: beer}
-  - {t: 111, kind: wine}
-  - {t: 116, kind: shot}
-  - {t: 121, kind: beer}
-  - {t: 126, kind: wine}
-  - {t: 131, kind: shot}
-  - {t: 136, kind: beer}
-  - {t: 141, kind: wine}
-  - {t: 146, kind: shot}
-  - {t: 151, kind: beer}
-  - {t: 156, kind: wine}
-  - {t: 161, kind: shot}
-  - {t: 166, kind: beer}
-  - {t: 171, kind: wine}
-  - {t: 176, kind: shot}
-  - {t: 181, kind: beer}
-  - {t: 186, kind: wine}
-  - {t: 191, kind: shot}
-  - {t: 196, kind: beer}
-  - {t: 201, kind: wine}
-  - {t: 206, kind: shot}
-  - {t: 211, kind: beer}
-  - {t: 216, kind: wine}
-  - {t: 221, kind: shot}
-  - {t: 226, kind: beer}
-  - {t: 231, kind: wine}
-  - {t: 236, kind: shot}
-  - {t: 60, kind: garrafon}
+  - {t: 46, kind: shot}
+  - {t: 56, kind: garrafon}
+  - {t: 70, vapor: 20}
+  - {t: 120, vapor: 20}
+  - {t: 170, vapor: 20}
+  - {t: 220, vapor: 25}

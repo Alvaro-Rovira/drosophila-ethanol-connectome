@@ -1,4 +1,8 @@
-"""Steering readout: a linear probe on <= 1.024 neurons that do NOT receive sensory input.
+"""Steering readout: a linear probe on <= 1.536 neurons that do NOT receive sensory input.
+
+The population read: the descending neurons (what the brain sends to the body), the projection
+neurons of the antennal lobe and the mushroom-body output neurons (the higher olfactory centres,
+where the left/right odour difference survives), and the most connected of the rest.
 
 It turns the population activity into a turn and a walking command. It is trained once (DAgger,
 scripts/train.py) to imitate a teacher that only sees what the fly senses; the wiring is never
@@ -10,15 +14,18 @@ from __future__ import annotations
 import numpy as np
 
 
-def feature_index(brain, senses, n_max: int = 1024) -> np.ndarray:
+def feature_index(brain, senses, n_max: int = 1536) -> np.ndarray:
     used = np.zeros(brain.N, bool)
     used[senses.inputs] = True
     indeg = np.diff(brain.indptr)
     dn = np.where((brain.klass == "descending") & ~used)[0]
     dn = dn[np.argsort(-indeg[dn])[:512]]
-    rest = np.where(~used & ~np.isin(np.arange(brain.N), dn))[0]
-    rest = rest[np.argsort(-indeg[rest])[: n_max - len(dn)]]
-    return np.sort(np.concatenate([dn, rest]))
+    olf = np.concatenate([brain.group(f"{g}|{s}") for g in ("ALPN", "MBON") for s in "LRU"]).astype(np.int64)
+    olf = olf[~used[olf]]
+    pick = np.union1d(dn, olf)
+    rest = np.where(~used & ~np.isin(np.arange(brain.N), pick))[0]
+    rest = rest[np.argsort(-indeg[rest])[: max(0, n_max - len(pick))]]
+    return np.sort(np.concatenate([pick, rest]))
 
 
 class Readout:

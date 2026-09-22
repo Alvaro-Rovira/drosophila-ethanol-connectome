@@ -1,4 +1,4 @@
-"""Live show: one continuous fly driven by its 8.000 neurons, drink orders, demo and compact frames.
+"""Live show: one continuous fly driven by its real neurons, drink orders, demo and compact frames.
 
 Shared by the web server (asyncio loop at 30 Hz) and the headless scripts. Nothing here decides
 what the fly does: orders only put puddles on the table.
@@ -33,6 +33,7 @@ CHANNELS = [
     ("MN_leg_T3", "MN pata T3", "mean"),
     ("MN_wing_power", "MN ala (potencia)", "mean"),
     ("DNg12", "DNg12 · acicalado", "max"),
+    ("MBON", "MBON · cuerpo fungiforme", "mean"),
 ]
 N_SCATTER = 1500
 SCATTER_EVERY = 4
@@ -66,6 +67,11 @@ class Live:
     # ------------------------------------------------------------------ setup
     def _build_sim(self, seed: int):
         brain, norms, ro_path, motor = self.model
+        # the live subject learns: its KC -> MBON synapses are plastic (a new subject starts naive)
+        if getattr(brain, "pl", None) is None:
+            brain.enable_plasticity()
+        else:
+            brain.reset_learning()
         self.sim = Sim(brain, seed=seed, alc_cfg=self.alc_cfg, readout=Readout.load(ro_path),
                        norms=norms, motor=motor)
         self.agent = self.sim
@@ -136,8 +142,14 @@ class Live:
         self.sim.alcohol.reset()
         self.pending_fx.append("shower")
 
+    def vapor(self, secs: float = 20.0):
+        """Ethanol vapour exposure: ethanol enters the haemolymph without drinking."""
+        self.sim.alcohol.vapor_s = min(60.0, self.sim.alcohol.vapor_s + float(secs))
+        self.pending_fx.append("vapor")
+
     def start_demo(self):
-        self.demo_queue = deque(sorted(((float(o["t"]), o["kind"]) for o in self.demo_cfg["orders"])))
+        self.demo_queue = deque(sorted(((float(o["t"]), o.get("kind") or f"vapor:{o['vapor']}")
+                                        for o in self.demo_cfg["orders"])))
         self.demo_t = 0.0
 
     def stop_demo(self):
@@ -159,7 +171,11 @@ class Live:
             self.demo_t += DT
             while self.demo_queue and self.demo_queue[0][0] <= self.demo_t:
                 _, kind = self.demo_queue.popleft()
-                if self._spawn(kind, demo=True):
+                if kind.startswith("vapor:"):
+                    secs = float(kind.split(":")[1])
+                    self.vapor(secs)
+                    self.toasts.append(f"Protocolo: vapor de etanol ({secs:.0f} s)")
+                elif self._spawn(kind, demo=True):
                     d = self.drinks[kind]
                     self.toasts.append(f"Protocolo: {d['name']} ({round(d['abv'] * 100)}% EtOH)")
                 else:
@@ -188,7 +204,7 @@ class Live:
                         "xy": base64.b64encode(self.sc_xy.tobytes()).decode(),
                         "kind": base64.b64encode(bytes(self.sc_kind)).decode()},
             "hmax": self.sim.brain.p.h_max,
-            "demo_len": max([o["t"] for o in self.demo_cfg["orders"]] or [0]),
+            "demo_len": max([o["t"] + o.get("vapor", 0) for o in self.demo_cfg["orders"]] or [0]),
             "substances": [{k: d[k] for k in ("id", "name", "color", "dose", "abv", "sugar", "impurity")}
                            for d in self.alc_cfg["drinks"]],
             "channels": [{"key": k, "label": lab} for k, lab, _ in CHANNELS],
@@ -235,6 +251,9 @@ class Live:
             "eth": self._effects(),
             "lorr": bool(act == "asleep"), "down": bool(f.pose != "up"), "sip": bool(f.sipping),
             "tt": round(self.t, 2),
+            "vapor": round(alc.vapor_s, 1),
+            "hunger": round(s.gut.hunger, 3), "crop": round(s.gut.crop, 3),
+            "mb": self._memory(),
         }
         if len(self.sc_idx) and s.n % SCATTER_EVERY == 0:
             v = np.clip(np.sqrt(np.clip(h[self.sc_idx], 0, hm) / hm) * 255, 0, 255).astype(np.uint8)
@@ -251,6 +270,11 @@ class Live:
                 v = max(pair) if how == "max" else 0.5 * (pair[0] + pair[1])
             out.append(round(float(v), 3))
         return out
+
+    def _memory(self) -> float:
+        """Mean depression of the KC -> MBON synapses (0 = naive)."""
+        pl = getattr(self.sim.brain, "pl", None)
+        return round(float(1.0 - pl["f"].mean()), 4) if pl is not None else 0.0
 
     def _effects(self) -> dict:
         """What ethanol is doing to the synapses right now (multipliers by neurotransmitter class)."""

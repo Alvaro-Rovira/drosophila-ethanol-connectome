@@ -97,7 +97,7 @@ def test_valid_token_sets_cookie_and_redirects(server):
     for attr in ("HttpOnly", "Secure", "SameSite=Lax", "Max-Age=2592000"):
         assert attr in sc
     ok = httpx.get(server["base"] + "/", headers={"cookie": cookie_of(r)})
-    assert ok.status_code == 200 and "EXP-DM8K" in ok.text
+    assert ok.status_code == 200 and "EXP-DM20K" in ok.text
     js = httpx.get(server["base"] + "/app.js", headers={"cookie": cookie_of(r)})
     assert js.status_code == 200 and "text/javascript" in js.headers["content-type"]
 

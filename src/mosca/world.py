@@ -71,6 +71,8 @@ class World:
         self.puddles: list[Puddle] = []
         self._next_id = 1
         self.t = 0.0
+        self.odor_lr: dict = {}
+        self.last_take = (0.0, 0.0)
 
     def place_fly(self, x=None, y=None, th=None):
         r, f = self.rng, self.fly
@@ -105,15 +107,26 @@ class World:
     def odor_at(self, x, y) -> float:
         return sum(p.amount * math.exp(-math.hypot(p.x - x, p.y - y) / ODOR_LAMBDA) for p in self.puddles)
 
+    def odor_by_kind(self, x, y) -> dict:
+        out: dict = {}
+        for p in self.puddles:
+            out[p.kind] = out.get(p.kind, 0.0) + p.amount * math.exp(-math.hypot(p.x - x, p.y - y) / ODOR_LAMBDA)
+        return out
+
     def antennae(self) -> tuple[float, float]:
-        """Odour at the left and right antenna, with 5% multiplicative receptor noise."""
+        """Odour at the left and right antenna, with 5% multiplicative receptor noise.
+
+        The total is returned; the odour of each substance at each antenna is left in
+        `self.odor_lr` ({kind: (left, right)}), because each smells different (configs/alcohol.yaml).
+        """
         f = self.fly
         hx, hy = f.x + 13 * math.cos(f.th), f.y + 13 * math.sin(f.th)
         nx, ny = -math.sin(f.th), math.cos(f.th)
-        cl = self.odor_at(hx - ANTENNA_OFFSET * nx, hy - ANTENNA_OFFSET * ny)
-        cr = self.odor_at(hx + ANTENNA_OFFSET * nx, hy + ANTENNA_OFFSET * ny)
+        kl = self.odor_by_kind(hx - ANTENNA_OFFSET * nx, hy - ANTENNA_OFFSET * ny)
+        kr = self.odor_by_kind(hx + ANTENNA_OFFSET * nx, hy + ANTENNA_OFFSET * ny)
         n = self.rng.normal(1.0, 0.05, 2)
-        return max(0.0, cl * n[0]), max(0.0, cr * n[1])
+        self.odor_lr = {k: (max(0.0, kl[k] * n[0]), max(0.0, kr[k] * n[1])) for k in kl}
+        return (sum(v[0] for v in self.odor_lr.values()), sum(v[1] for v in self.odor_lr.values()))
 
     def rays(self) -> np.ndarray:
         f = self.fly
@@ -198,11 +211,13 @@ class World:
         p = self.contact_puddle()
         f.sipping = bool(p is not None and pe >= 0.5)
         delivered = 0.0
+        self.last_take = (0.0, 0.0)
         if f.sipping:
             take = min(p.amount, SIP_RATE * dt)
             p.amount -= take
             p.idle = 0.0
             delivered = p.dose * take
+            self.last_take = (take, p.sugar)
             if p.amount <= 1e-6:
                 self.puddles.remove(p)
         for q in list(self.puddles):

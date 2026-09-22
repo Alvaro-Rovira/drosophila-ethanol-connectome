@@ -144,8 +144,73 @@ def t_wander(seed, a=None, secs=40.0):
             "speed": path / secs, "turn_per_dist": turn / max(path, 1.0)}
 
 
+def t_satiety(seed, hunger):
+    """Held on a beer drop with the hunger frozen: seconds of sipping in 6 s."""
+    s = sim(seed)
+    s.gut.freeze(hunger)
+    s.world.place_fly(360, 270, 0.0)
+    p = s.order("beer", 100, 120)
+    f = s.world.fly
+    p.x, p.y = f.x + 4, f.y
+    x0, y0 = f.x, f.y
+    n = 0
+    for _ in range(int(6 / DT)):
+        s.step()
+        f.x, f.y, f.z = x0, y0, 0.0
+        n += int(f.sipping)
+        p.amount = 1.0
+    return {"sip_s": n * DT}
+
+
+def t_free_feeding(seed):
+    """A hungry fly with beer offered again and again for 120 s: how much it drinks, and when."""
+    s = sim(seed)
+    drops, t_last = 0, []
+    before = 0.0
+    for k in range(int(120 / DT)):
+        if not s.world.puddles:
+            s.order("beer", 60, 120)
+        s.step()
+        if s.drunk > before + 1e-9:
+            t_last.append(k * DT)
+        before = s.drunk
+    first = [t for t in t_last if t < 60]
+    second = [t for t in t_last if t >= 60]
+    return {"sip_s_0_60": len(first) * DT, "sip_s_60_120": len(second) * DT, "hunger_end": s.gut.hunger}
+
+
+def t_mdn(seed, ablate=False):
+    """MDN rate around a head-on bump (relative to sober), and backing up with MDN silenced."""
+    s = sim(seed)
+    if ablate:
+        idx = np.concatenate([s.brain.group(f"MDN|{x}") for x in "LRU"]).astype(np.int64)
+        orig = s.brain.step
+
+        def step(st, u, m=None, noise=0.0, rng=None):
+            h = orig(st, u, m, noise, rng)
+            h[idx] = 0.0
+            return h
+        s.brain.step = step
+    for _ in range(40):
+        s.step()
+    f = s.world.fly
+    f.x, f.y, f.th, f.v = TABLE_W - 32, 270.0, float(np.random.default_rng(seed).normal(0, 0.2)), 60.0
+    pre, post, bumped, back = [], [], None, 0
+    for k in range(int(4 / DT)):
+        s.step()
+        f = s.world.fly
+        if f.bumped and bumped is None:
+            bumped = k
+        mdn = float(np.mean(s.body.pair(s.rel, "MDN"))) if s.rel else 0.0
+        (pre if bumped is None else post).append(mdn)
+        if bumped is not None and k - bumped < 60 and f.v < -5:
+            back += 1
+    return {"mdn_pre": float(np.mean(pre)) if pre else 0.0,
+            "mdn_post": float(np.max(post[:30])) if post else 0.0, "backward": float(back > 3)}
+
+
 TASKS = {"approach": t_approach, "sip": t_sip, "backward": t_backward, "escape": t_escape,
-         "wander": t_wander}
+         "wander": t_wander, "satiety": t_satiety, "free": t_free_feeding, "mdn": t_mdn}
 
 
 def _run(args):
@@ -205,10 +270,78 @@ def cmd_alcohol(a):
     p.write_text(json.dumps(d, indent=1))
 
 
+def cmd_extra(a):
+    jobs = [("satiety", 12000 + i, {"hunger": h}) for h in (1.0, 0.5, 0.0) for i in range(a.n)]
+    jobs += [("free", 12100 + i, {}) for i in range(a.n)]
+    jobs += [("mdn", 12200 + i, {"ablate": ab}) for ab in (False, True) for i in range(a.n)]
+    with Pool(a.workers) as pool:
+        res = pool.map(_run, jobs)
+    get = lambda nm, kw=None: [r for n, k, r in res if n == nm and (kw is None or k == kw)]
+    out = {"sorbo_s_segun_hambre": {str(h): round(float(np.mean([r["sip_s"] for r in get("satiety", {"hunger": h})])), 2)
+                                    for h in (1.0, 0.5, 0.0)}}
+    fr = get("free")
+    out["alimentacion_libre"] = {k: round(float(np.mean([r[k] for r in fr])), 2)
+                                 for k in ("sip_s_0_60", "sip_s_60_120", "hunger_end")}
+    m0, m1 = get("mdn", {"ablate": False}), get("mdn", {"ablate": True})
+    out["MDN"] = {"reposo_antes_del_choque": round(float(np.mean([r["mdn_pre"] for r in m0])), 3),
+                  "pico_tras_el_choque": round(float(np.mean([r["mdn_post"] for r in m0])), 3),
+                  "marcha_atras": round(float(np.mean([r["backward"] for r in m0])), 3),
+                  "marcha_atras_sin_MDN": round(float(np.mean([r["backward"] for r in m1])), 3)}
+    out["aprendizaje"] = learning()
+    p = ART / "evaluation.json"
+    d = json.loads(p.read_text()) if p.exists() else {}
+    d["extra"] = {"n": a.n, **out}
+    p.write_text(json.dumps(d, indent=1, ensure_ascii=False))
+    print(json.dumps(out, indent=1, ensure_ascii=False))
+
+
+def learning():
+    """Mushroom-body learning: odour-evoked MBON response before and after pairing the beer odour
+    with sugar in the mouth and a rise of ethanol, for the trained odour and for others."""
+    from mosca.senses import Senses
+    br = load_brain()
+    br.enable_plasticity()
+    se = Senses(br, 4.0)
+    base = {"c_l": 0, "c_r": 0, "sweet": 0, "bitter": 0, "touch_l": 0, "touch_r": 0, "vib": 0,
+            "arousal": 1, "v": 0.3, "w": 0, "z": 0, "th": 0}
+    mb = br.pl["mbon"]
+
+    def resp(kind):
+        pl, br.pl = br.pl, None
+        out = []
+        for odor in ({kind: (0.5, 0.5)}, {}):
+            st = br.init_state(1)
+            acc = []
+            for k in range(60):
+                h = br.step(st, se.encode({**base, "odor_lr": odor}))
+                if k >= 40:
+                    acc.append(h[mb, 0].copy())
+            out.append(np.mean(acc, 0))
+        br.pl = pl
+        return out[0] - out[1]
+
+    kinds = ["beer", "wine", "tequila", "garrafon"]
+    pre = {k: resp(k) for k in kinds}
+    st = br.init_state(1)
+    trial = {**base, "odor_lr": {"beer": (0.9, 0.9)}, "sweet": 0.55}
+    for rep in range(3):
+        for k in range(60):
+            a = min(0.3, 0.3 * k / 60)          # ethanol rising while it drinks
+            m = br.class_multiplier(1.0, 1.0 - 0.5 * a, 1.0 + a)
+            br.step(st, se.encode(trial), m)
+        for k in range(150):
+            br.step(st, se.encode(base))
+    post = {k: resp(k) for k in kinds}
+    ch = {k: round(float((np.abs(post[k]).sum() - np.abs(pre[k]).sum()) / np.abs(pre[k]).sum() * 100), 1)
+          for k in kinds}
+    return {"cambio_respuesta_MBON_%": ch, "sinapsis_KC_MBON": int(len(br.pl["f"])),
+            "peso_minimo": round(float(br.pl["f"].min()), 3)}
+
+
 if __name__ == "__main__":
     os.environ.setdefault("OMP_NUM_THREADS", "1")
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["tasks", "alcohol", "shuffle"])
+    ap.add_argument("cmd", choices=["tasks", "alcohol", "shuffle", "extra"])
     ap.add_argument("--n", type=int, default=24)
     ap.add_argument("--test", action="store_true")
     ap.add_argument("--brain", choices=["real", "shuffled"], default="real")
@@ -221,4 +354,4 @@ if __name__ == "__main__":
     if a.cmd == "shuffle":
         shuffle_brain()
     else:
-        {"tasks": cmd_tasks, "alcohol": cmd_alcohol}[a.cmd](a)
+        {"tasks": cmd_tasks, "alcohol": cmd_alcohol, "extra": cmd_extra}[a.cmd](a)
