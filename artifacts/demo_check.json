@@ -1,0 +1,106 @@
+[
+ {
+  "seed": 1,
+  "etapas": {
+   "sobria": 0.0,
+   "piripi": 9.3,
+   "pedo": 18.8,
+   "borracha": 216.9
+  },
+  "primera_caida_s": null,
+  "ko_s": null,
+  "pico_a": 0.655,
+  "bebido": 0.93
+ },
+ {
+  "seed": 2,
+  "etapas": {
+   "sobria": 0.0,
+   "piripi": 11.2,
+   "pedo": 19.9,
+   "borracha": 99.6
+  },
+  "primera_caida_s": null,
+  "ko_s": null,
+  "pico_a": 0.686,
+  "bebido": 0.94
+ },
+ {
+  "seed": 3,
+  "etapas": {
+   "sobria": 0.0,
+   "piripi": 12.0,
+   "pedo": 18.3,
+   "borracha": 199.1
+  },
+  "primera_caida_s": null,
+  "ko_s": null,
+  "pico_a": 0.683,
+  "bebido": 1.062
+ },
+ {
+  "seed": 4,
+  "etapas": {
+   "sobria": 0.0,
+   "piripi": 10.7,
+   "pedo": 19.3,
+   "borracha": 150.3
+  },
+  "primera_caida_s": null,
+  "ko_s": null,
+  "pico_a": 0.656,
+  "bebido": 0.85
+ },
+ {
+  "seed": 5,
+  "etapas": {
+   "sobria": 0.0,
+   "piripi": 11.1,
+   "pedo": 20.4,
+   "borracha": 116.8
+  },
+  "primera_caida_s": 121.8,
+  "ko_s": 124.8,
+  "pico_a": 0.796,
+  "bebido": 0.972
+ },
+ {
+  "seed": 6,
+  "etapas": {
+   "sobria": 0.0,
+   "piripi": 12.1,
+   "pedo": 20.2,
+   "borracha": 32.8
+  },
+  "primera_caida_s": null,
+  "ko_s": null,
+  "pico_a": 0.726,
+  "bebido": 0.78
+ },
+ {
+  "seed": 7,
+  "etapas": {
+   "sobria": 0.0,
+   "piripi": 10.7,
+   "pedo": 17.0,
+   "borracha": 151.2
+  },
+  "primera_caida_s": 164.5,
+  "ko_s": 167.5,
+  "pico_a": 0.737,
+  "bebido": 0.936
+ },
+ {
+  "seed": 8,
+  "etapas": {
+   "sobria": 0.0,
+   "piripi": 9.2,
+   "pedo": 17.3,
+   "borracha": 53.4
+  },
+  "primera_caida_s": null,
+  "ko_s": null,
+  "pico_a": 0.625,
+  "bebido": 0.78
+ }
+]

@@ -1,0 +1,46 @@
+{
+ "validacion_real": {
+  "n": 24,
+  "alcance": 1.0,
+  "acepta_cerveza": 1.0,
+  "rechaza_garrafon": 1.0,
+  "marcha_atras": 1.0,
+  "escape": 1.0,
+  "anda": 0.908,
+  "bloqueo_max_s": 0.3,
+  "caidas_sobria": 0.0
+ },
+ "validacion_shuffled": {
+  "n": 24,
+  "alcance": 0.0,
+  "acepta_cerveza": 1.0,
+  "rechaza_garrafon": 0.0,
+  "marcha_atras": 1.0,
+  "escape": 1.0,
+  "anda": 0.998,
+  "bloqueo_max_s": 0.067,
+  "caidas_sobria": 0.0
+ },
+ "test_real": {
+  "n": 40,
+  "alcance": 0.925,
+  "acepta_cerveza": 1.0,
+  "rechaza_garrafon": 1.0,
+  "marcha_atras": 1.0,
+  "escape": 1.0,
+  "anda": 0.915,
+  "bloqueo_max_s": 0.333,
+  "caidas_sobria": 0.0
+ },
+ "test_shuffled": {
+  "n": 40,
+  "alcance": 0.0,
+  "acepta_cerveza": 1.0,
+  "rechaza_garrafon": 0.0,
+  "marcha_atras": 1.0,
+  "escape": 1.0,
+  "anda": 0.998,
+  "bloqueo_max_s": 0.067,
+  "caidas_sobria": 0.0
+ }
+}

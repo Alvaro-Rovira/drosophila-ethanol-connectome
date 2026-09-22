@@ -1,0 +1,64 @@
+# Textos de la interfaz (español).
+# Narración tipo documental: comenta lo que le pasa a la mosca desde la biología, en lenguaje sencillo.
+# Mezcla datos reales de Drosophila con lo que hace la simulación (marcado como "en la simulación").
+narration:
+  stages:
+    sobria:
+      - "Sus neuronas olfativas captan la bebida por las dos antenas y las descendentes llevan la orden a las patas."
+      - "Camina con la marcha en trípode de los insectos: tres patas apoyadas y tres en el aire, alternando."
+      - "Las motoneuronas de sus seis patas tienen todo su tono: por eso se sostiene y anda firme."
+      - "Dato real: a las moscas de la fruta les atrae el olor a alcohol, porque las lleva hasta la fruta fermentada."
+    piripi:
+      - "Dato real: con poco alcohol las moscas se vuelven hiperactivas y caminan más rápido que sobrias."
+      - "En su cerebro suben la octopamina y la dopamina, y la inhibición afloja un poco: más actividad."
+      - "Todavía huele bien y acierta con las bebidas: los sentidos llegan casi sin retraso."
+    pedo:
+      - "El alcohol mete ruido en sus sinapsis: las órdenes de giro salen imprecisas y camina en zigzag."
+      - "Sus sentidos llegan con retraso: reacciona a dónde estaba el olor, no a dónde está ahora."
+      - "Cada vez le cuesta más encontrar la bebida. Nadie se lo impide: es su propio cerebro el que ya no atina."
+    borracha:
+      - "La inhibición GABA se potencia y la excitación se deprime: las motoneuronas de las patas pierden tono."
+      - "Si el tono de sus patas baja de la mitad de lo normal, no pueden sostenerla y se cae."
+      - "Dato real: en el laboratorio se mide la borrachera de una mosca por cuándo pierde el equilibrio."
+    ko:
+      - "Pérdida del reflejo de enderezamiento: intenta levantarse, pero sus patas no tienen fuerza para ello."
+      - "Su cerebro sigue activo, pero tan inhibido que las órdenes ya no mueven las patas."
+      - "Se levantará sola cuando baje el alcohol y sus motoneuronas recuperen el tono."
+    resaca:
+      - "El alcohol casi se ha ido y sus neuronas vuelven a su ritmo normal."
+      - "Dato real: tras una borrachera las moscas desarrollan tolerancia y la siguiente vez les afecta menos."
+  acts:
+    sip:
+      - "Su neurona MN9 se ha activado con el sabor dulce: extiende la probóscide y bebe."
+    groom:
+      - "Sus neuronas descendentes de acicalado se activan: se frota con las patas delanteras."
+    fly:
+      - "Su fibra gigante ha disparado: despega. Es el reflejo de escape más rápido de la mosca."
+    moonwalk:
+      - "Al chocar con el borde, sus antenas lo notan y retrocede unos pasos."
+  events:
+    fall: "Sus patas han perdido tono y no la sostienen: se cae. Nadie lo ha decidido, sale de sus motoneuronas."
+    wake: "Sus motoneuronas recuperan el tono y consigue darse la vuelta y ponerse de pie."
+    escape: "¡Susto! La fibra gigante ha disparado y despega."
+    tap: "Alguien golpea la mesa: el órgano de Johnston, en sus antenas, siente la vibración."
+    shower: "Ducha fría: alcohol a cero al instante. En una mosca de verdad esto no funciona así."
+  stage_notes:
+    sobria: "Todo el tono en las patas: anda firme y acierta."
+    piripi: "Más monoaminas, menos freno: corre más."
+    pedo: "Ruido y retraso en sus neuronas: zigzag y fallos."
+    borracha: "Sus patas pierden tono: puede caerse."
+    ko: "Sin fuerza para levantarse: sedada."
+    resaca: "Sus neuronas vuelven a la normalidad."
+toasts:
+  ordered: "{who} administra {drink}"
+  bar_full: "Arena completa: máximo 3 gotas a la vez"
+  too_fast: "Espera un momento entre administraciones"
+  reset: "{who} aplica lavado: etanol a 0"
+  demo_on: "{who} inicia el protocolo automático"
+  demo_off: "Protocolo automático finalizado"
+  demo_ko: "Sujeto en LORR: protocolo detenido"
+articles: {beer: "una", wine: "un", shot: "un", tequila: "un", garrafon: "un"}
+puddle_distance: [100, 300]
+order_min_interval_s: 1.5
+order_max_per_min: 20
+max_clients: 20

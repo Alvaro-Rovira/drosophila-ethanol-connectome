@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="dark">
+<title>Etanol y comportamiento · preparación in silico</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230e1116'/%3E%3Ccircle cx='8' cy='8' r='3' fill='%234fb3d9'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<header class="bar">
+  <div class="title">
+    <span class="exp-id">EXP-DM8K</span>
+    <h1>Etanol y comportamiento en una preparación <i>in silico</i> de <i>Drosophila melanogaster</i></h1>
+  </div>
+  <dl class="run">
+    <div><dt>Sujeto</dt><dd id="subject">–</dd></div>
+    <div><dt>Tiempo</dt><dd id="clock" class="mono">00:00:00.0</dd></div>
+    <div><dt>Observadores</dt><dd id="viewers" class="mono">–</dd></div>
+    <div><dt>Estado</dt><dd><span id="conn" class="status wait">conectando</span></dd></div>
+  </dl>
+</header>
+
+<main class="grid">
+  <div class="col">
+    <section class="panel arena-panel">
+      <header class="ph">
+        <h2>Arena · cámara cenital</h2>
+        <span class="ph-meta mono" id="arenaMeta">720 × 540 u · 30 fps</span>
+      </header>
+      <div class="arena-wrap">
+        <canvas id="table" width="720" height="540" role="img" aria-label="Vista cenital de la arena con la mosca, su trayectoria y las gotas"></canvas>
+        <div id="offline" class="offline" hidden>sin señal · reconectando</div>
+      </div>
+      <div class="arena-foot mono" id="hud">x – · y – · θ – · v – u/s · ω – rad/s</div>
+    </section>
+    <section class="panel protocol-panel">
+      <header class="ph"><h2>Protocolo</h2><span class="ph-meta">máx. 3 gotas en la arena</span></header>
+      <table class="subst">
+        <thead><tr><th>Sustancia</th><th class="num">EtOH</th><th class="num">Azúcar</th><th class="num">Dosis</th><th></th></tr></thead>
+        <tbody id="substances"></tbody>
+      </table>
+      <div class="controls">
+        <button id="tap" class="btn" type="button">Estímulo mecánico</button>
+        <button id="shower" class="btn" type="button">Lavado (EtOH → 0)</button>
+        <button id="demo" class="btn" type="button">Protocolo automático</button>
+      </div>
+      <div class="controls">
+        <button id="csv" class="btn ghost" type="button">Exportar datos (CSV)</button>
+        <button id="rec" class="btn ghost" type="button">Grabar vídeo 10 s</button>
+      </div>
+    </section>
+    <section class="panel log-panel">
+      <header class="ph"><h2>Registro de eventos</h2><span class="ph-meta" id="logCount">0</span></header>
+      <ol id="log" class="log mono" aria-live="polite"></ol>
+    </section>
+  </div>
+  <div class="col">
+    <section class="panel state-panel">
+      <header class="ph"><h2>Estado del sujeto</h2><span class="ph-meta" id="phase">–</span></header>
+      <div class="metrics">
+        <div class="m"><span class="k">Etanol en hemolinfa</span><span class="v mono" id="mEth">–</span><span class="u">u.a.</span></div>
+        <div class="m"><span class="k">Postura</span><span class="v" id="mPose">–</span><span class="u" id="mPoseNote"></span></div>
+        <div class="m"><span class="k">Tono motor de las patas</span><span class="v mono" id="mTone">–</span><span class="u">× sobrio</span></div>
+        <div class="m"><span class="k">Velocidad</span><span class="v mono" id="mSpeed">–</span><span class="u">u/s</span></div>
+        <div class="m"><span class="k">Probóscide (MN9)</span><span class="v" id="mPer">–</span><span class="u" id="mPerNote"></span></div>
+        <div class="m"><span class="k">Ingerido</span><span class="v mono" id="mDrunk">0</span><span class="u">administraciones</span></div>
+      </div>
+      <canvas id="ethPlot" class="plot" aria-label="Etanol en hemolinfa, últimos 120 s"></canvas>
+      <p class="cap">Etanol en hemolinfa, últimos 120 s. Líneas: umbrales en los que, en este modelo, aparecen la hiperactividad (0,15), la ataxia (0,45) y la caída (0,75).</p>
+    </section>
+    <section class="panel neuro-panel">
+      <header class="ph">
+        <h2>Registro de neuronas identificadas</h2>
+        <span class="ph-meta">tasa / tasa sobria · 20 s</span>
+      </header>
+      <canvas id="traces" class="traces" aria-label="Trazas de actividad de neuronas identificadas"></canvas>
+      <p class="cap">Cada traza es la tasa de una neurona o población identificada en MaleCNS, dividida por su media en la mosca sobria. Escala logarítmica; punteado = reposo (1); rojo = umbral a partir del cual actúa sobre el cuerpo.</p>
+    </section>
+    <section class="panel synapse-panel">
+      <header class="ph"><h2>Efecto del etanol sobre la transmisión</h2><span class="ph-meta">× sobrio</span></header>
+      <div id="synapse" class="syn"></div>
+      <p class="cap">El etanol no actúa sobre el cuerpo: solo multiplica la salida sináptica de cada neurona según su neurotransmisor, añade ruido sináptico y retrasa los sentidos.</p>
+    </section>
+    <section class="panel pop-panel">
+      <header class="ph"><h2>Actividad poblacional</h2><span class="ph-meta" id="popMeta">1.500 somas</span></header>
+      <canvas id="brain" class="pop" aria-label="Actividad de 1.500 neuronas en su posición real"></canvas>
+      <p class="cap"><span class="key exc"></span>excitadoras <span class="key inh"></span>inhibidoras <span class="key dn"></span>descendentes y motoneuronas. Vista frontal: cerebro arriba, cordón ventral abajo. Brillo = tasa.</p>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <p id="modelLine" class="mono">Modelo: – neuronas · – sinapsis agregadas · – Hz</p>
+  <p>Datos: MaleCNS v1.0 (FlyEM/HHMI Janelia, University of Cambridge, MRC LMB, Google Research), CC BY 4.0. Berg et al., Cell 2026, doi:10.1101/2025.10.09.680999. Dinámica de tasas inspirada en nfly (MIT).
+  <a href="#methods" id="methodsLink">Métodos</a></p>
+</footer>
+
+<dialog id="methods">
+  <article class="methods">
+    <h2>Métodos</h2>
+
+    <h3>Preparación</h3>
+    <p>Red de tasas sobre <b id="mN">8.000</b> neuronas del conectoma MaleCNS v1.0, con su cableado y signos reales
+    (acetilcolina, dopamina, serotonina y octopamina excitan; GABA, glutamato e histamina inhiben). Las neuronas se
+    eligen por función: todas las descendentes, motoneuronas de patas, alas, cuello y probóscide, receptores
+    olfativos, gustativos, mecanosensoriales antenales y del órgano de Johnston, y las vías que los unen. El cableado
+    no se modifica. Constantes de tiempo por clase (sensorial 15 ms, interneurona 30, descendente 45, motora 75),
+    adaptación en neuronas centrales, integración a 15 Hz.</p>
+
+    <h3>Lectura motora</h3>
+    <ul>
+      <li><b>Ingesta</b>: extensión de la probóscide cuando MN9 supera su umbral.</li>
+      <li><b>Escape</b>: despegue cuando la fibra gigante (DNp01) supera su umbral.</li>
+      <li><b>Postura</b>: de pie mientras el tono medio de las motoneuronas de las seis patas es ≥ 55 % del sobrio;
+      por debajo durante 0,3 s, caída; sin recuperación durante 3 s, pérdida del reflejo de enderezamiento (LORR).</li>
+      <li><b>Locomoción</b>: rumbo y paso de una lectura lineal sobre 1.024 neuronas que no reciben la entrada
+      directa (única pieza entrenada, por imitación de un controlador que solo ve lo que ven los sentidos);
+      la velocidad efectiva está limitada por el tono de las patas.</li>
+    </ul>
+    <p>Los umbrales se colocan entre dos respuestas neuronales medidas en el sujeto sobrio (p. ej. MN9 con sacarosa
+    frente a MN9 con una solución amarga), no a mano.</p>
+
+    <h3>Etanol</h3>
+    <p>Absorción desde el buche y eliminación lineal (acelerada para que se observe en minutos). El etanol solo
+    actúa sobre la transmisión sináptica: monoaminas ×1,3 a dosis bajas y ×0,6 a dosis altas; excitación
+    colinérgica deprimida hasta ×0,35; inhibición ×0,85 a dosis bajas y potenciada hasta ×1,6; ruido sináptico
+    multiplicativo de media cero; retraso sensorial de hasta 400 ms; sensibilidad olfativa reducida.</p>
+
+    <h3>Resultados principales</h3>
+    <table class="res mono">
+      <tr><th>Nivel</th><th>Velocidad</th><th>Giro/distancia</th><th>En el suelo</th></tr>
+      <tr><td>0</td><td>39,5</td><td>0,050</td><td>0 %</td></tr>
+      <tr><td>0,3</td><td>74,2</td><td>0,032</td><td>0 %</td></tr>
+      <tr><td>0,6</td><td>16,8</td><td>0,223</td><td>0 %</td></tr>
+      <tr><td>0,75</td><td>1,2</td><td>0,361</td><td>83 %</td></tr>
+    </table>
+    <p>Control con cableado permutado (mismos grados, pesos y signos): la búsqueda de alimento cae de 92,5 % a 0 % y
+    el rechazo del garrafón de 100 % a 0 %. Escape, aceptación de la cerveza y retroceso ante la pared no cambian:
+    esas conductas no dependen de la topología en este modelo. MDN apenas responde al tacto antenal.</p>
+
+    <h3>Limitaciones</h3>
+    <p>Anclas cualitativas de la literatura, no ajuste a datos crudos. Sustancias, arena y velocidad de eliminación
+    son ficticias. La propiocepción y una corriente tónica de vigilia entran por neuronas elegidas con semilla fija.
+    Detalle en <span class="mono">docs/behavior.md</span>.</p>
+    <button class="btn" type="button" id="methodsClose">Cerrar</button>
+  </article>
+</dialog>
+</body>
+</html>

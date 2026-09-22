@@ -1,0 +1,29 @@
+[project]
+name = "mosca"
+version = "0.1.0"
+description = "Drosophila in silico: 8.000 neuronas del conectoma MaleCNS gobiernan la conducta y el etanol actúa solo sobre las sinapsis"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy",
+    "scipy",
+    "pyyaml",
+]
+
+[dependency-groups]
+prep = ["pyarrow", "pandas", "matplotlib", "imageio"]
+server = ["fastapi", "uvicorn", "websockets"]
+dev = ["pytest", "httpx", "playwright"]
+
+[tool.uv]
+default-groups = ["prep", "server", "dev"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mosca"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

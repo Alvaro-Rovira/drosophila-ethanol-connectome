@@ -1,0 +1,25 @@
+# data and environments
+data/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+logs/
+node_modules/
+# secrets (never in the repo)
+secrets/
+tokens.yaml
+*.tokens.yaml
+.env
+.env.*
+*.pem
+*.key
+pass
+hmac*
+.claude/settings.local.json
+# local scratch
+tmp/
+artifacts/tmp/
+artifacts/frames/
+# large files (>50 MB) are listed here explicitly when they appear
+*.feather

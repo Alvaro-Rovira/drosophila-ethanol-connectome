@@ -1,0 +1,161 @@
+"""Training of the only learned piece: the steering readout. The wiring is never touched.
+
+  uv run python scripts/train.py norms        # sober reference rate of every identified group
+  uv run python scripts/train.py readout      # DAgger, chosen by CLOSED-LOOP reach, not by R2
+
+Seeds: training 0-1999, validation 2000-2999, test 10000+ (scripts/evaluate.py, once).
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import sys
+import time
+from multiprocessing import Pool
+from pathlib import Path
+
+import numpy as np
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+from mosca.readout import Readout, feature_index     # noqa: E402
+from mosca.sim import Sim, load_brain                # noqa: E402
+from mosca.world import DT                           # noqa: E402
+
+ART = ROOT / "artifacts"
+LAMBDAS = (1e-4, 1e-3, 1e-2, 1e-1)
+_C = {}
+
+
+def ctx():
+    if not _C:
+        br = load_brain()
+        s = Sim(br, seed=0, readout=None, norms={})
+        _C.update(brain=br, senses=s.senses, feat=feature_index(br, s.senses))
+    return _C
+
+
+def new_sim(seed, readout=None, norms=None):
+    c = ctx()
+    s = Sim(c["brain"], seed=seed, readout=readout, norms=norms, senses=c["senses"])
+    return s
+
+
+def episode(seed, beta, model, secs=25.0, collect=True, norms=None):
+    c = ctx()
+    ro = Readout(c["feat"], *model) if model is not None else None
+    s = new_sim(seed, ro if ro is not None else None, norms)
+    if ro is None:
+        s.readout = None
+    s.teacher = beta if ro is not None else 1.0
+    rng = np.random.default_rng(seed + 99)
+    kinds = ["beer", "wine"]
+    for _ in range(1 + int(rng.integers(0, 3))):
+        s.order(kinds[int(rng.integers(0, 2))], 120, 420)
+    if rng.random() < 0.35:
+        # start right in front of a wall: bumps are rare otherwise, and the readout would never
+        # learn what the population does after an antennal touch
+        from mosca.world import MARGIN, TABLE_H, TABLE_W
+        side = int(rng.integers(0, 4))
+        f = s.world.fly
+        f.x, f.y, f.th = [(TABLE_W - MARGIN - 6, rng.uniform(80, TABLE_H - 80), 0.0),
+                          (MARGIN + 6, rng.uniform(80, TABLE_H - 80), math.pi),
+                          (rng.uniform(80, TABLE_W - 80), TABLE_H - MARGIN - 6, math.pi / 2),
+                          (rng.uniform(80, TABLE_W - 80), MARGIN + 6, -math.pi / 2)][side]
+        f.th += float(rng.normal(0, 0.3))
+    X, Y, R = [], [], []
+    reached, t_reach = False, secs
+    for k in range(int(secs / DT)):
+        tick = s.acc + DT >= s.period
+        s.step()
+        if tick and collect:
+            X.append(s.features(c["feat"]))
+            Y.append(s.label)
+        if norms is None and tick:
+            R.append(s.raw)
+        if not reached and s.world.contact_puddle() is not None:
+            reached, t_reach = True, (k + 1) * DT
+    return (np.asarray(X, np.float32), np.asarray(Y, np.float32),
+            {"reach": float(reached), "t": t_reach}, R)
+
+
+def _ep(args):
+    return episode(*args)
+
+
+# ------------------------------------------------------------------ norms
+def cmd_norms(a):
+    with Pool(a.workers) as pool:
+        out = pool.map(_ep, [(3000 + i, 1.0, None, 25.0, False, None) for i in range(a.episodes)])
+    rows = {}
+    for _, _, _, R in out:
+        for r in R:
+            for g, v in r.items():
+                rows.setdefault(g, []).append(v)
+    norms = {g: {"mean": float(np.mean(v)), "std": float(np.std(v))} for g, v in rows.items()}
+    (ART / "norms.json").write_text(json.dumps(norms, indent=1))
+    print(f"{len(norms)} grupos -> artifacts/norms.json")
+    for g in ("MN_leg_T1|L", "MN9|L", "MDN|L", "DNp01|L", "MN_wing_power|L"):
+        print(f"  {g:18s} {norms[g]['mean']:.5f}")
+
+
+# ------------------------------------------------------------------ readout
+def cmd_readout(a):
+    norms = json.loads((ART / "norms.json").read_text())
+    c = ctx()
+    d = len(c["feat"]) + 1
+    XtX, XtY = np.zeros((d, d)), np.zeros((d, 2))
+    n, mu, sd, model = 0, None, None, None
+    best, hist, t0 = (None, -1.0), [], time.time()
+    with Pool(a.workers) as pool:
+        for rnd in range(a.rounds + 1):
+            beta = 0.5 ** rnd
+            jobs = [((rnd * 997 + i) % 2000, beta, model, 25.0, True, norms) for i in range(a.episodes)]
+            out = pool.map(_ep, jobs)
+            X = np.concatenate([o[0] for o in out]).astype(np.float64)
+            Y = np.concatenate([o[1] for o in out]).astype(np.float64)
+            if mu is None:
+                mu, sd = X.mean(0), X.std(0) + 1e-6
+            Z = np.c_[(X - mu) / sd, np.ones(len(X))]
+            XtX += Z.T @ Z
+            XtY += Z.T @ Y
+            n += len(Z)
+            cands = []
+            for lam in LAMBDAS:
+                W = np.linalg.solve(XtX + lam * n * np.eye(d), XtY)
+                cands.append((lam, W))
+            # closed loop with the readout alone at the wheel (validation seeds)
+            scores = []
+            for lam, W in cands:
+                m = (mu, sd, W)
+                res = pool.map(_ep, [(2000 + i, 0.0, m, 25.0, False, norms) for i in range(a.val)])
+                scores.append((float(np.mean([r[2]["reach"] for r in res])),
+                               float(np.mean([r[2]["t"] for r in res])), lam, W))
+            scores.sort(key=lambda s: (-s[0], s[1]))
+            reach, t_mean, lam, W = scores[0]
+            model = (mu, sd, W)
+            row = {"ronda": rnd, "beta_experto": beta, "lambda": lam, "muestras": n,
+                   "alcance_lazo_cerrado": round(reach, 3), "t_medio": round(t_mean, 1),
+                   "segundos": round(time.time() - t0)}
+            hist.append(row)
+            print(json.dumps(row), flush=True)
+            if reach > best[1]:
+                best = (model, reach)
+    mu, sd, W = best[0]
+    Readout(c["feat"], mu, sd, W).save(ART / "readout.npz")
+    (ART / "train_log.json").write_text(json.dumps({"historial": hist, "alcance": best[1]}, indent=1))
+    print("-> artifacts/readout.npz · alcance en lazo cerrado", best[1])
+
+
+if __name__ == "__main__":
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("cmd", choices=["norms", "readout"])
+    ap.add_argument("--episodes", type=int, default=96)
+    ap.add_argument("--rounds", type=int, default=4)
+    ap.add_argument("--val", type=int, default=24)
+    ap.add_argument("--workers", type=int, default=6)
+    a = ap.parse_args()
+    {"norms": cmd_norms, "readout": cmd_readout}[a.cmd](a)
