@@ -25,7 +25,7 @@ Z_RATE = 1.2
 FLY_Z = 0.1
 CONTACT_DIST = 14.0
 SIP_RATE = 0.4               # a puddle empties in 2.5 s of sipping
-EVAPORATE_S = 40.0
+EVAPORATE_S = 120.0          # FICCIÓN: a drop lasts 2 min untouched (40 s was too short for the ×3 arena)
 ANTENNA_OFFSET = 10.0
 ODOR_LAMBDA = 250.0
 

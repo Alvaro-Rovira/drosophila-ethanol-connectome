@@ -1,12 +1,12 @@
 {
  "test_real": {
   "n": 40,
-  "alcance": 0.95,
+  "alcance": 0.975,
   "acepta_cerveza": 1.0,
   "rechaza_garrafon": 1.0,
   "marcha_atras": 1.0,
   "escape": 1.0,
-  "anda": 0.917,
+  "anda": 0.918,
   "bloqueo_max_s": 0.333,
   "caidas_sobria": 0.0
  },
@@ -28,7 +28,7 @@
   "rechaza_garrafon": 1.0,
   "marcha_atras": 1.0,
   "escape": 1.0,
-  "anda": 0.924,
+  "anda": 0.921,
   "bloqueo_max_s": 0.333,
   "caidas_sobria": 0.0
  },
@@ -51,13 +51,13 @@
    "0.0": 0.0
   },
   "alimentacion_libre": {
-   "sip_s_0_60": 9.98,
-   "sip_s_60_120": 4.12,
+   "sip_s_0_60": 9.5,
+   "sip_s_60_120": 3.11,
    "hunger_end": 0.0
   },
   "MDN": {
-   "reposo_antes_del_choque": 1.004,
-   "pico_tras_el_choque": 1.207,
+   "reposo_antes_del_choque": 1.003,
+   "pico_tras_el_choque": 1.205,
    "marcha_atras": 1.0,
    "marcha_atras_sin_MDN": 1.0
   },

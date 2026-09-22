@@ -118,7 +118,7 @@ class Sim:
         self.raw = self.pools.raw(h)
         self.rel = self.pools.rel(self.raw)
         f = self.world.fly
-        self.bs = self.body.update(self.rel, self.period, still=abs(f.v) < 8.0)
+        self.bs = self.body.update(self.rel, self.period, still=abs(f.v) < 8.0, airborne=f.z > FLY_Z)
         self.label = self.expert(self.obs, self.period)
         self.prev_cmd = self.cmd
         if self.readout is not None and (self.teacher <= 0 or self.rng.random() >= self.teacher):

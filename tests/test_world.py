@@ -49,7 +49,11 @@ def test_untouched_puddle_evaporates():
     w = world()
     w.spawn_puddle("wine", DRINKS["wine"])
     w.fly.x, w.fly.y = 40, 40
-    for _ in range(int(41 / DT)):
+    from mosca.world import EVAPORATE_S
+    for _ in range(int((EVAPORATE_S - 1) / DT)):
+        w.sip(0.0)
+    assert w.puddles
+    for _ in range(int(2 / DT)):
         w.sip(0.0)
     assert not w.puddles
 

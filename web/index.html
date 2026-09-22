@@ -53,8 +53,9 @@
       <div class="actions">
         <button id="tap" class="act" type="button"><span class="ic" aria-hidden="true">✋</span>Golpe en la barra<small>la asusta</small></button>
         <button id="vapor" class="act" type="button"><span class="ic" aria-hidden="true">☁</span>Vapor de etanol (20 s)<small>como en el laboratorio</small></button>
+        <button id="helpup" class="act" type="button"><span class="ic" aria-hidden="true">↻</span>Darle la vuelta<small>si se queda en el suelo</small></button>
         <button id="shower" class="act" type="button"><span class="ic" aria-hidden="true">💧</span>Lavado<small>alcohol a cero</small></button>
-        <button id="demo" class="act strong" type="button"><span class="ic" aria-hidden="true">▶</span>Protocolo automático<small>de sobria a KO en 4 min</small></button>
+        <button id="demo" class="act strong" type="button"><span class="ic" aria-hidden="true">▶</span>Protocolo automático<small>de sobria a KO en ~5 min</small></button>
       </div>
     </section>
 
@@ -70,10 +71,10 @@
       <div class="gauge-wrap">
         <div class="gauge-top"><span>Alcohol en sangre</span><b id="mEth" class="num">–</b></div>
         <div class="gauge" aria-hidden="true">
-          <span class="z z1"></span><span class="z z2"></span><span class="z z3"></span><span class="z z4"></span>
+          <span class="z z1"></span><span class="z z2"></span><span class="z z3"></span><span class="z z4"></span><span class="z z5"></span>
           <i id="gaugeFill"></i>
         </div>
-        <div class="gauge-lab"><span>Sobria</span><span>Estimulada</span><span>Débil</span><span>Sedada</span></div>
+        <div class="gauge-lab"><span>Sobria</span><span>Estimulada</span><span>Débil</span><span>Tropieza</span><span>KO</span></div>
       </div>
       <div class="chips">
         <div class="chip"><span class="k">Postura</span><span class="v" id="mPose">–</span><span class="u" id="mPoseNote"></span></div>
@@ -85,7 +86,7 @@
       </div>
       <canvas id="ethPlot" class="plot" aria-label="Alcohol en sangre, últimos 2 minutos"></canvas>
       <p class="cap">Alcohol en los últimos 2 minutos. Las líneas marcan dónde, en este modelo, empieza a correr más (0,15),
-        se debilita (0,6) y se cae (0,7).</p>
+        se debilita (0,6), tropieza y se cae (0,7) y se queda KO (0,88).</p>
     </section>
 
     <section class="card neuro-card">

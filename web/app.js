@@ -58,6 +58,7 @@
     if (a < 0.15) return ['Sobria', 'good'];
     if (a < 0.6) return ['Estimulada', 'warn'];
     if (a < 0.7) return ['Débil', 'warn'];
+    if (a < 0.88) return ['Tropieza', 'bad'];
     return ['Sedada', 'bad'];
   }
 
@@ -208,8 +209,8 @@
       g.fillText(lab, pad.l - 4, Y(v));
     }
     g.setLineDash([3, 3]);
-    for (const v of [0.15, 0.6, 0.7]) {
-      g.strokeStyle = v === 0.7 ? 'rgba(226,92,92,.55)' : 'rgba(224,163,64,.4)';
+    for (const v of [0.15, 0.6, 0.7, 0.88]) {
+      g.strokeStyle = v >= 0.7 ? 'rgba(226,92,92,.55)' : 'rgba(224,163,64,.4)';
       g.beginPath(); g.moveTo(pad.l, Y(v) + .5); g.lineTo(w - pad.r, Y(v) + .5); g.stroke();
     }
     g.setLineDash([]);
@@ -393,6 +394,7 @@
       else if (fx === 'wake') log('Se levanta', 'ev-ok', `sus motoneuronas recuperan el tono (${fmt(m.tone, 2)})`);
       else if (fx === 'escape') log('¡Salta!', 'ev-neuro', `la fibra gigante (DNp01) se dispara: ${fmt(ch.DNp01, 0)} veces su nivel normal`);
       else if (fx === 'tap') log('Golpe en la barra', 'ev-user', 'la vibración llega al órgano de Johnston, en las antenas');
+      else if (fx === 'helpup') log('Le das la vuelta', 'ev-user', 'solo cambia la postura: si sus patas no tienen fuerza, volverá a caer');
       else if (fx === 'shower') log('Lavado: alcohol a cero', 'ev-user', 'sus neuronas se recuperan solas');
       else if (fx === 'vapor') log('Vapor de etanol', 'ev-eth', 'el alcohol entra en la sangre sin que beba, como en el laboratorio');
     }
@@ -490,6 +492,7 @@
     per.className = 'v' + (m.sip ? ' good' : '');
     $('#mPerNote').textContent = m.sip ? 'MN9' : '';
     $('#mDrunk').textContent = intakes;
+    $('#helpup').classList.toggle('strong', !!m.down);
     const hu = $('#mHunger'); hu.textContent = fmt(m.hunger, 2);
     hu.className = 'v mono' + (m.hunger < 0.2 ? ' good' : '');
     $('#mHungerNote').textContent = m.hunger < 0.2 ? 'saciada' : m.hunger > 0.7 ? 'hambrienta' : '';
@@ -504,7 +507,7 @@
       demoOn = m.demo; const b = $('#demo');
       b.classList.toggle('on', demoOn);
       b.childNodes[1].textContent = demoOn ? 'Detener protocolo' : 'Protocolo automático';
-      b.querySelector('small').textContent = demoOn ? 'en marcha' : 'de sobria a KO en 4 min';
+      b.querySelector('small').textContent = demoOn ? 'en marcha' : 'de sobria a KO en ~5 min';
     }
   }
 
@@ -588,6 +591,7 @@
   // ---------------------------------------------------------------- wiring
   $('#tap').addEventListener('click', () => { send({ t: 'tap' }); const b = $('#tap'); b.disabled = true; setTimeout(() => { b.disabled = false; }, 3000); });
   $('#shower').addEventListener('click', () => send({ t: 'reset' }));
+  $('#helpup').addEventListener('click', () => { send({ t: 'helpup' }); const b = $('#helpup'); b.disabled = true; setTimeout(() => { b.disabled = false; }, 2000); });
   $('#vapor').addEventListener('click', () => { send({ t: 'vapor' }); const b = $('#vapor'); b.disabled = true; setTimeout(() => { b.disabled = false; }, 10000); });
   $('#demo').addEventListener('click', () => send({ t: 'demo', on: !demoOn }));
   $('#csv').addEventListener('click', exportCsv);

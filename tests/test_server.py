@@ -220,3 +220,12 @@ def test_pauses_without_clients(server):
     t0 = hub.ticks
     time.sleep(1.0)
     assert hub.ticks == t0
+
+
+def test_help_up_puts_a_fallen_fly_on_its_feet():
+    from mosca.live import Live
+    live = Live(seed=3)
+    live.sim.world.fly.pose = "back"
+    live.sim.body.pose = "back"
+    live.help_up()
+    assert live.sim.world.fly.pose == "up" and live.sim.body.pose == "up" and "helpup" in live.pending_fx

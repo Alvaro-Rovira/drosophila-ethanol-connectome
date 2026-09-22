@@ -19,7 +19,7 @@ from mosca.world import DT               # noqa: E402
 ORDER = ["sobria", "piripi", "pedo", "borracha", "ko"]
 
 
-def run(seed: int, model, limit_s: float = 300.0):
+def run(seed: int, model, limit_s: float = 360.0):
     live = Live(seed=seed, model=model)
     live.start_demo()
     reached, first_fall, first_lorr, peak = {}, None, None, 0.0

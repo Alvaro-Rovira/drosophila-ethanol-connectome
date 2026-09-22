@@ -96,18 +96,25 @@ class Body:
         self.escape_t = 0.0
         self.flying = False
 
+    def help_up(self):
+        """The experimenter turns the fly over. Only the posture changes: if its leg motor neurons have
+        no tone it falls again, as a real sedated fly would."""
+        self.pose = "up"
+        self.low_t = self.down_t = self.try_t = 0.0
+
     def tone(self, rel: dict) -> tuple[float, float, float]:
         legs = [rel.get(g, 1.0) for g in LEGS]
         L = float(np.mean(legs[0::2]))
         R = float(np.mean(legs[1::2]))
         return float(np.mean(legs)), (R - L) / max(R + L, 1e-6), float(min(legs))
 
-    def update(self, rel: dict, dt: float, still: bool) -> dict:
+    def update(self, rel: dict, dt: float, still: bool, airborne: bool = False) -> dict:
         c = self.c
         P, asym, weakest = self.tone(rel)
         ev = []
         if self.pose == "up":
-            self.low_t = self.low_t + dt if P < c.fall else 0.0
+            # in the air the legs carry no weight: they cannot give way (falls happen on the ground)
+            self.low_t = self.low_t + dt if (P < c.fall and not airborne) else 0.0
             if self.low_t >= c.fall_s:
                 self.pose = "side" if abs(asym) > 0.12 else "back"
                 self.down_t = self.try_t = 0.0

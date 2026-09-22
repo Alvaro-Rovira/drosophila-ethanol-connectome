@@ -15,3 +15,4 @@ orders:
   - {t: 120, vapor: 20}
   - {t: 170, vapor: 20}
   - {t: 220, vapor: 25}
+  - {t: 265, vapor: 25}

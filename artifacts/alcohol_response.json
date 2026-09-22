@@ -2,72 +2,72 @@
  "real": [
   {
    "a": 0.0,
-   "velocidad": 49.2,
-   "anda": 0.933,
-   "giro_por_distancia": 0.0203,
+   "velocidad": 50.3,
+   "anda": 0.934,
+   "giro_por_distancia": 0.0202,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
    "alcanza_y_bebe": 0.958
   },
   {
    "a": 0.15,
-   "velocidad": 54.3,
-   "anda": 0.937,
-   "giro_por_distancia": 0.0202,
+   "velocidad": 54.6,
+   "anda": 0.938,
+   "giro_por_distancia": 0.0204,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.833
+   "alcanza_y_bebe": 0.917
   },
   {
    "a": 0.3,
-   "velocidad": 60.1,
-   "anda": 0.767,
-   "giro_por_distancia": 0.0364,
+   "velocidad": 58.9,
+   "anda": 0.738,
+   "giro_por_distancia": 0.0355,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.542
+   "alcanza_y_bebe": 0.5
   },
   {
    "a": 0.45,
-   "velocidad": 65.3,
-   "anda": 0.884,
-   "giro_por_distancia": 0.0277,
+   "velocidad": 65.9,
+   "anda": 0.89,
+   "giro_por_distancia": 0.028,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
    "alcanza_y_bebe": 0.083
   },
   {
    "a": 0.6,
-   "velocidad": 59.3,
-   "anda": 0.913,
-   "giro_por_distancia": 0.0335,
+   "velocidad": 60.1,
+   "anda": 0.921,
+   "giro_por_distancia": 0.033,
    "en_el_suelo": 0.0,
    "sedada": 0.0,
-   "alcanza_y_bebe": 0.042
+   "alcanza_y_bebe": 0.0
   },
   {
    "a": 0.75,
-   "velocidad": 1.5,
-   "anda": 0.036,
-   "giro_por_distancia": 0.0479,
-   "en_el_suelo": 0.964,
-   "sedada": 0.889,
+   "velocidad": 25.1,
+   "anda": 0.63,
+   "giro_por_distancia": 0.0418,
+   "en_el_suelo": 0.391,
+   "sedada": 0.0,
    "alcanza_y_bebe": 0.0
   },
   {
    "a": 0.9,
-   "velocidad": 0.1,
-   "anda": 0.006,
-   "giro_por_distancia": 0.0665,
-   "en_el_suelo": 0.993,
-   "sedada": 0.917,
+   "velocidad": 0.4,
+   "anda": 0.016,
+   "giro_por_distancia": 0.0593,
+   "en_el_suelo": 0.984,
+   "sedada": 0.849,
    "alcanza_y_bebe": 0.0
   },
   {
    "a": 1.0,
    "velocidad": 0.1,
    "anda": 0.004,
-   "giro_por_distancia": 0.0782,
+   "giro_por_distancia": 0.0781,
    "en_el_suelo": 0.993,
    "sedada": 0.917,
    "alcanza_y_bebe": 0.0

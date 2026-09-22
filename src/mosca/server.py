@@ -113,6 +113,7 @@ def create_app() -> FastAPI:
     app.state.hub = None
     taps: dict[str, float] = {}
     vapors: dict[str, float] = {}
+    helps: dict[str, float] = {}
 
     def hub() -> Hub:
         if app.state.hub is None:
@@ -199,6 +200,11 @@ def create_app() -> FastAPI:
                             vapors[name] = now
                             live.vapor(20.0)
                             h.toast(ui["toasts"]["vapor"].format(who=name))
+                    elif kind == "helpup":
+                        now = time.monotonic()
+                        if now - helps.get(name, -9.0) >= 2.0:
+                            helps[name] = now
+                            live.help_up()
                     elif kind == "reset":
                         live.reset()
                         h.toast(ui["toasts"]["reset"].format(who=name))

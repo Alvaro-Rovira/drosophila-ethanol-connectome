@@ -22,7 +22,7 @@ conductas dependen de verdad de la topología del conectoma y cuáles no.
 > feeding is triggered by the proboscis motor neuron MN9, escape by the giant fibre, posture by the tone
 > of the leg motor neurons. Hunger acts as a hormonal gain on the sweet and bitter receptors. Ethanol,
 > taken by drinking or as vapour, acts only on synaptic transmission. Hyperactivity, loss of leg tone,
-> falls and loss of the righting reflex emerge from it. A degree-preserving shuffled connectome
+> repeated falls and loss of the righting reflex emerge from it. A degree-preserving shuffled connectome
 > abolishes odour-guided foraging (95% → 0%), bitter rejection (100% → 0%) and backing away from walls
 > (100% → 0%); escape and sugar acceptance survive the shuffle. The steering readout is bilaterally
 > symmetric (it turns only on left-right differences) and takes the walking speed from the descending
@@ -30,7 +30,7 @@ conductas dependen de verdad de la topología del conectoma y cuáles no.
 
 ![Consola del experimento](artifacts/screens/consola.png)
 
-| Vista 3D: la mosca en la barra de un bar | Vista 3D: caída a 0,72 de etanol |
+| Vista 3D: la mosca en la barra de un bar | Vista 3D: a 0,72 de etanol tropieza, cae y se levanta |
 |:---:|:---:|
 | ![barra 3D](artifacts/gifs/barra-3d.gif) | ![caída en 3D](artifacts/gifs/barra-3d-caida.gif) |
 
@@ -39,7 +39,7 @@ Vista cenital (la que usa el análisis):
 | Basal | Etanol 0,45 · estimulación | Etanol 0,66 · hipotonía |
 |:---:|:---:|:---:|
 | ![basal](artifacts/gifs/basal.gif) | ![estimulación](artifacts/gifs/estimulacion.gif) | ![hipotonía](artifacts/gifs/hipotonia.gif) |
-| **Etanol 0,72 · caída** | **Etanol 0,9 · LORR** | **Estímulo mecánico · escape** |
+| **Etanol 0,72 · tropiezo** | **Etanol 0,9 · LORR** | **Estímulo mecánico · escape** |
 | ![caída](artifacts/gifs/caida.gif) | ![LORR](artifacts/gifs/lorr.gif) | ![escape](artifacts/gifs/estimulo-mecanico.gif) |
 
 ---
@@ -68,7 +68,7 @@ paréntesis, la versión anterior de 8.000 neuronas.
 
 | Tarea | Conectoma real | Conectoma permutado |
 |---|---:|---:|
-| Encontrar una gota por el olor y beber (≤ 25 s) | **95 %** (92,5 %) | **0 %** (0 %) |
+| Encontrar una gota por el olor y beber (≤ 25 s) | **97,5 %** (92,5 %) | **0 %** (0 %) |
 | Rechazar una solución amarga (40 % EtOH con impurezas) | **100 %** (100 %) | **0 %** (0 %) |
 | Retroceder al chocar con el borde | **100 %** (100 %) | **0 %** (100 %) |
 | Aceptar una solución dulce (5 % EtOH) | 100 % | 100 % |
@@ -79,7 +79,7 @@ Tres conductas **desaparecen** al destruir la topología: la búsqueda guiada po
 amargo y la marcha atrás. Las otras dos sobreviven a la permutación, así que en este modelo **no son
 evidencia** de que el conectoma importe: les basta con que llegue suficiente corriente al sitio adecuado.
 La marcha atrás ha pasado por las dos columnas mientras se arreglaba el volante: ver
-[Dos fallos del volante](#dos-fallos-del-volante-vueltas-sobre-sí-misma-y-quedarse-quieta).
+[Fallos encontrados y arreglados](#fallos-encontrados-y-arreglados).
 
 ### 2. El etanol, actuando solo sobre las sinapsis, produce la progresión de la intoxicación
 
@@ -87,22 +87,24 @@ Nivel de etanol congelado, 24 moscas por nivel, 40 s cada una (`scripts/evaluate
 
 | Etanol (u.a.) | Velocidad (u/s) | Tono de patas (× sobrio) | En el suelo | LORR | Encuentra y bebe |
 |---:|---:|---:|---:|---:|---:|
-| 0 | 49,2 | 0,96 | 0 % | 0 % | 96 % |
-| 0,15 | 54,3 | – | 0 % | 0 % | 83 % |
-| 0,30 | 60,1 | 1,12 | 0 % | 0 % | 54 % |
-| 0,45 | **65,3** | – | 0 % | 0 % | 8 % |
-| 0,60 | 59,3 | 0,76 | 0 % | 0 % | 4 % |
-| 0,67 | – | 0,63 | – | – | – |
-| 0,70 | – | **0,26** | – | – | – |
-| 0,75 | 1,5 | 0,18 | **96 %** | **89 %** | 0 % |
-| 0,90 | 0,1 | – | 99 % | 92 % | 0 % |
+| 0 | 50,3 | 0,96 | 0 % | 0 % | 96 % |
+| 0,15 | 54,6 | – | 0 % | 0 % | 92 % |
+| 0,30 | 58,9 | 1,13 | 0 % | 0 % | 50 % |
+| 0,45 | **65,9** | – | 0 % | 0 % | 8 % |
+| 0,60 | 60,1 | 0,74 | 0 % | 0 % | 0 % |
+| 0,70 | – | 0,62 | cae y se levanta (3 caídas / 30 s) | 0 % | – |
+| 0,75 | 25,1 | 0,61 | **39 %** (11 caídas / 30 s) | 0 % | 0 % |
+| 0,85 | – | 0,53 | 13 caídas / 30 s | – | – |
+| 0,90 | 0,4 | 0,50 | **98 %** | **85 %** | 0 % |
 
-- **Estimulación**: la velocidad sube hasta un +33 % a 0,45, como la hiperactividad descrita en moscas
+- **Estimulación**: la velocidad sube hasta un +31 % a 0,45, como la hiperactividad descrita en moscas
   expuestas a etanol (Wolf et al. 2002).
-- **Pérdida de tono y sedación**: el tono de las motoneuronas de las patas baja poco a poco desde 0,5 y
-  se hunde entre 0,67 y 0,7. La mosca cae y no consigue enderezarse (LORR), que es la medida estándar
-  de sedación en *Drosophila*.
-- **Deterioro de la búsqueda**: encuentra la comida cada vez menos desde 0,15 (96 % → 54 % a 0,3 → 4 % a 0,6).
+- **Pérdida de control postural**: el tono de las motoneuronas de las patas baja poco a poco desde 0,5.
+  Entre 0,7 y 0,85 la mosca **se cae y se levanta una y otra vez** (3-15 caídas cada 30 s), que es la
+  pérdida de control postural que mide el inebriómetro.
+- **Sedación**: hacia 0,9 ya no consigue enderezarse (LORR, 85 %), la medida estándar de sedación en
+  *Drosophila*.
+- **Deterioro de la búsqueda**: encuentra la comida cada vez menos desde 0,15 (96 % → 50 % a 0,3 → 0 % a 0,6).
 - **Lo que no aparece**: con 8.000 neuronas, el giro por unidad de distancia se multiplicaba por 2-4
   entre 0,45 y 0,6, y se presentaba como ataxia. Con 20.000 neuronas y el volante simétrico **no
   aparece** (0,020 → 0,034). Visto el fallo de las vueltas, aquel aumento de giro era probablemente el
@@ -115,9 +117,9 @@ Nivel de etanol congelado, 24 moscas por nivel, 40 s cada una (`scripts/evaluate
 |---|---|
 | Sobre una gota de cerveza, hambrienta | 5,7 s de sorbo en 6 s |
 | Sobre una gota de cerveza, saciada | **0 s** |
-| Cerveza ofrecida sin parar durante 2 min | 10,0 s de sorbo el primer minuto, 4,1 s el segundo |
+| Cerveza ofrecida sin parar durante 2 min | 9,5 s de sorbo el primer minuto, 3,1 s el segundo |
 | Protocolo solo con bebidas | la mitad de las moscas se queda en 0,06 de etanol |
-| Protocolo con pulsos de vapor | **8 de 8** llegan a LORR (180-235 s) |
+| Protocolo con pulsos de vapor | **8 de 8** llegan a LORR (227-241 s) |
 
 La mosca se sacia antes de emborracharse. Por eso la sedación se estudia con **vapor de etanol**
 (inebriómetro, ensayo de LORR), y así lo hace el protocolo automático de la consola.
@@ -307,7 +309,7 @@ depresión de la excitación y potenciación GABAérgica a dosis altas. Las fase
   diana, con lo que se conservan los grados de entrada y salida.
 - **Semillas separadas.** Entrenamiento 0-1999, validación 2000-2999, prueba 10000+.
 - **Ablaciones** de grupos identificados, y tests de que la saciedad, el vapor, la dispersión de las
-  células de Kenyon y el aprendizaje funcionan (42 tests).
+  células de Kenyon y el aprendizaje funcionan (44 tests).
 - **Lo que no funciona como en la literatura**, y se dice:
   - **MDN**, la neurona de marcha atrás (Bidaye et al. 2014), responde poco al choque (0,98 → 1,18 veces
     su media), y silenciarla no impide retroceder: la marcha atrás la produce el volante a partir de
@@ -329,7 +331,7 @@ depresión de la excitación y potenciación GABAérgica a dosis altas. Las fase
 
 Explicación completa, con todas las decisiones y sus motivos: [`docs/behavior.md`](docs/behavior.md).
 
-### Dos fallos del volante: vueltas sobre sí misma y quedarse quieta
+### Fallos encontrados y arreglados
 
 **1. Vueltas sobre sí misma.** Con la primera versión de 20.000 neuronas, al poner garrafón (o cualquier bebida que no fuera cerveza o
 vino), la mosca se quedaba **girando sobre sí misma a la velocidad máxima**, incluso sin haber bebido.
@@ -368,6 +370,24 @@ a nada (0-1 de cada 10).
 - **Resultado**: con 0,3 de etanol llega a la bebida el 54 % de las veces (antes 0 %), y por bebida
   entre 4 y 9 de cada 10. La marcha atrás vuelve a depender de la topología.
 
+**3. Un golpe dejaba KO a una mosca sobria.** Al golpear la barra la mosca saltaba, «se caía» en el aire
+y ya no se levantaba nunca.
+
+- **Causa**: al conectar los propioceptores reales de las patas, los dejé callados cuando la pata no
+  pisaba el suelo. En el salto las motoneuronas de las patas perdían tono y el cuerpo lo leía como una
+  caída; ya en el suelo, sin propiocepción, no recuperaban el tono y la mosca no se levantaba.
+- **Arreglo**: en el aire las patas no cargan peso, así que no se puede caer de pie; y los
+  propioceptores de movimiento (cordotonales) informan siempre, pise o no. Un golpe ya no tumba a
+  ninguna mosca sobria (test y prueba de estrés: 0 caídas por debajo de 0,5 de etanol). Tras un lavado,
+  una mosca caída se levanta sola en menos de 5 s.
+- **Efecto sobre el alcohol**: con la propiocepción siempre activa las patas aguantan más. Por eso ahora
+  entre 0,7 y 0,85 hay tropiezos (cae y se levanta) y la sedación llega hacia 0,9.
+- **Botón «Darle la vuelta»**: pone de pie a una mosca caída. Solo cambia la postura: si sus patas no
+  tienen fuerza, vuelve a caer, como una mosca sedada de verdad.
+- **Otros ajustes**: las gotas duran 120 s sin tocar (antes 40 s, demasiado poco para la arena grande;
+  en una sesión simulada toca 22 de 24 gotas), y el protocolo automático ya no se atasca cuando la
+  barra está llena.
+
 Además, la arena pasó de 720 × 540 a **2.160 × 1.620** (triple de lado): era tan pequeña que la mosca
 chocaba con las paredes todo el rato. La prueba de estrés, repetida con la arena y el volante nuevos,
 sigue sin moscas que den vueltas (racha máxima de 1,4 s).
@@ -401,9 +421,10 @@ pasa y por qué, y deja lo más técnico a mano.
   ve el sorbo. Se puede girar la cámara arrastrando y hacer zoom con la rueda.
 - **Vista desde arriba**, la del análisis: rejilla, escala, trayectoria coloreada por
   el nivel de etanol, isolíneas de olor y etiquetas de estado (ingesta, caída, LORR, vuelo).
-- **La carta**: cinco bebidas para servir una gota, más golpe en la barra, vapor de etanol, lavado y el
-  protocolo automático en dos fases (ingesta voluntaria y pulsos de vapor).
-- **Cómo está**: un indicador del alcohol en sangre con sus zonas (sobria, estimulada, débil, sedada),
+- **La carta**: cinco bebidas para servir una gota, más golpe en la barra, vapor de etanol, «Darle la
+  vuelta», lavado y el protocolo automático en dos fases (ingesta voluntaria y pulsos de vapor).
+- **Cómo está**: un indicador del alcohol en sangre con sus zonas (sobria, estimulada, débil, tropieza,
+  KO),
   postura, fuerza en las patas, velocidad, probóscide, hambre y gotas bebidas.
 - **Su cerebro, en directo**: 12 neuronas o grupos identificados (beber · MN9, escapar · fibra gigante,
   patas, alas, marcha atrás · MDN, giro · DNa02, memoria · MBON...). Cada uno se muestra respecto a la

@@ -31,7 +31,7 @@ misma ganancia (G = 1,25; 0,08 % de neuronas saturadas sin entrada).
 | **Hambre y saciedad** | Las mismas gustativas, con su ganancia cambiada por el hambre (ver abajo). MN9 decide. | Hambrienta: 5,7 s de sorbo en 6 s. Saciada: 0 s (test). |
 | **Escapar** | Órgano de Johnston → fibra gigante (DNp01). | Un golpe sube la fibra gigante de 0 a ~340 veces su media. Silenciarla → no escapa (test). |
 | **Mantenerse en pie** | Motoneuronas de las seis patas: si su tono medio baja del 55 % del sobrio durante 0,3 s, cae. | Silenciarlas → cae y no se levanta (test). Sobria, el tono nunca baja del 88 %. |
-| **Sedación (LORR)** | Las mismas: en el suelo sin poder enderezarse durante 3 s. | Aparece sola a partir de ~0,7 de etanol. |
+| **Sedación (LORR)** | Las mismas: en el suelo sin poder enderezarse durante 3 s. | Tropiezos (cae y se levanta) entre 0,7 y 0,85; LORR hacia 0,9. |
 | **Velocidad** | El tono de las patas limita la velocidad real. | Cerebro en silencio → no se mueve (test). |
 | **Rumbo y paso** | «Volante» lineal y **simétrico** sobre 1.536 neuronas que no reciben entrada sensorial directa: 512 descendentes, las neuronas de proyección del lóbulo antenal, las MBON y otras centrales. El giro sale solo de diferencias izquierda − derecha de neuronas homólogas; la velocidad, solo de las descendentes. Única pieza entrenada. | Con el mismo volante sobre el cerebro mezclado no encuentra ni una gota. |
 | **Retroceder al chocar** | El mismo volante, a partir de lo que el tacto antenal provoca en la población. | 100 %; con el cableado mezclado, 0 %. Silenciar MDN no lo impide. |
@@ -98,22 +98,23 @@ Nivel congelado, 24 moscas por nivel, 40 s:
 
 | Etanol | Velocidad | Giro por distancia | En el suelo | LORR | Encuentra y bebe |
 |---:|---:|---:|---:|---:|---:|
-| 0 | 49,2 | 0,020 | 0 % | 0 % | 96 % |
-| 0,15 | 54,3 | 0,020 | 0 % | 0 % | 83 % |
-| 0,3 | 60,1 | 0,036 | 0 % | 0 % | 54 % |
-| 0,45 | **65,3** | 0,028 | 0 % | 0 % | 8 % |
-| 0,6 | 59,3 | 0,034 | 0 % | 0 % | 4 % |
-| 0,75 | 1,5 | 0,048 | **96 %** | **89 %** | 0 % |
-| 0,9 | 0,1 | – | 99 % | 92 % | 0 % |
+| 0 | 50,3 | 0,020 | 0 % | 0 % | 96 % |
+| 0,15 | 54,6 | 0,020 | 0 % | 0 % | 92 % |
+| 0,3 | 58,9 | 0,036 | 0 % | 0 % | 50 % |
+| 0,45 | **65,9** | 0,028 | 0 % | 0 % | 8 % |
+| 0,6 | 60,1 | 0,033 | 0 % | 0 % | 0 % |
+| 0,75 | 25,1 | 0,042 | **39 %** | 0 % | 0 % |
+| 0,9 | 0,4 | – | **98 %** | **85 %** | 0 % |
 | 1,0 | 0,1 | – | 99 % | 92 % | 0 % |
 
-Tono medio de las patas (× sobrio, 8 moscas, 30 s): 0,96 a 0 · 1,12 a 0,3 · 0,82 a 0,5 · 0,76 a 0,6 ·
-0,67 a 0,64 · 0,63 a 0,67 · **0,26 a 0,7** · 0,18 a 0,75. (El tono depende algo del volante, porque
+Tono medio de las patas (× sobrio, 8 moscas, 30 s) y caídas por 30 s: 0,96 a 0 · 1,13 a 0,3 · 0,81 a 0,5 ·
+0,74 a 0,6 · 0,63 a 0,67 · 0,62 a 0,7 (3 caídas) · 0,61 a 0,75 (11) · 0,57 a 0,8 (15) · 0,53 a 0,85 (13) ·
+0,50 a 0,9 (2: ya no se levanta).
 los propioceptores de las patas codifican la velocidad a la que anda.)
 
 - **Hiperactividad** de 0,15 a 0,6, con el máximo a 0,45 (+33 %).
-- **Pérdida de tono** progresiva de las patas desde 0,5, y **colapso** entre 0,67 y 0,7: caída y
-  pérdida del reflejo de enderezamiento.
+- **Pérdida de tono** progresiva de las patas desde 0,5; entre 0,7 y 0,85 **cae y se levanta** una y
+  otra vez (pérdida de control postural); hacia 0,9, pérdida del reflejo de enderezamiento.
 - **La búsqueda de comida se degrada** desde 0,15 (96 % → 54 % a 0,3 → 4 % a 0,6).
 - **Diferencia con la versión de 8.000:** allí el giro por distancia se multiplicaba por 2-4 entre
   0,45 y 0,6 («ataxia de giro»). Con 20.000 neuronas y el volante simétrico **no aparece**. Tras el
@@ -121,7 +122,7 @@ los propioceptores de las patas codifican la velocidad a la que anda.)
   simetría, no una ataxia real. No se han retocado las curvas del etanol para forzarlo.
 - **Bebiendo, la mosca se sacia antes de emborracharse.** En el protocolo solo con bebidas, la mitad
   de las moscas se quedaba en 0,06. Por eso el protocolo automático tiene dos fases: ingesta
-  voluntaria (0-60 s) y pulsos de vapor de 20 s (70-245 s). Con él, 8 de 8 moscas llegan a LORR
+  voluntaria (0-60 s) y pulsos de vapor (70-290 s). Con él, 8 de 8 moscas llegan a LORR
   (entre 180 y 235 s).
 
 ## Prueba final (semillas que el modelo no ha visto)
@@ -207,6 +208,27 @@ tequila 9, garrafón 8.
 **Arena.** Pasó de 720 × 540 a 2.160 × 1.620 u (triple de lado, 21,6 × 16,2 cm), porque la mosca chocaba
 con las paredes todo el rato. Normas, umbrales y volante se recalcularon con ella. La prueba de estrés,
 repetida, sigue en 0 de 90 moscas con vueltas (racha máxima de 1,4 s).
+
+## Tercer fallo: un golpe dejaba KO a una mosca sobria
+
+**Síntoma.** Al golpear la barra la mosca saltaba, «se caía» en el aire y no se levantaba nunca (6 de 6).
+
+**Causa.** Los propioceptores de las patas se callaban cuando la pata no pisaba el suelo. En el salto,
+las motoneuronas de las patas perdían tono (0,85 → 0,41) y el cuerpo lo leía como caída. En el suelo,
+sin propiocepción, el tono se quedaba en 0,24 y la mosca no se levantaba.
+
+**Arreglo.**
+- En el aire las patas no cargan peso: no hay regla de caída mientras la mosca está en el aire.
+- Los propioceptores de movimiento (cordotonales) informan siempre, pise o no.
+
+Resultado: 0 caídas por debajo de 0,5 de etanol en la prueba de estrés (golpes cada 3 s incluidos), y
+una mosca caída se levanta tras un lavado en menos de 5 s. Consecuencia: las patas aguantan más con
+alcohol (tropiezos entre 0,7 y 0,85, LORR hacia 0,9).
+
+**También:**
+- Botón «Darle la vuelta», que pone de pie a una mosca caída; si no tiene tono, vuelve a caer.
+- Gotas de 120 s sin tocar (antes 40 s): en una sesión simulada toca 22 de 24.
+- El protocolo automático ya no se atasca cuando la barra está llena.
 
 ## Lo que no sale bien y por qué
 

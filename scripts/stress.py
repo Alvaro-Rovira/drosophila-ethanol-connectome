@@ -7,6 +7,7 @@ For each scenario (several seeds, the live object exactly as the server runs it)
   bloqueo   longest time standing still while up, sober-ish and not drinking (s)
   fuera     the fly left the arena; nan: a non-finite value in the network or the body
   sat       fraction of neurons at the ceiling of the rate model
+  caídas    falls with ethanol below 0,5 (must be 0), and the longest time down in that range
 
   uv run python scripts/stress.py            # -> artifacts/stress.json
 """
@@ -75,6 +76,7 @@ def run(args):
     run_, sign, longest = 0, 0.0, 0
     out = nan = False
     sat = []
+    falls_sober, prev_pose, down_s, max_down_sober = 0, "up", 0, 0
     t0 = time.perf_counter()
     for k in range(int(secs / DT)):
         if name == "golpes" and k % 90 == 45:
@@ -97,6 +99,12 @@ def run(args):
             longest_still = max(longest_still, still)
         else:
             still = 0
+        if f.pose != "up" and prev_pose == "up" and s.alcohol.a < 0.5:
+            falls_sober += 1                              # a fly below 0,5 of ethanol must not fall
+        down_s = down_s + 1 if f.pose != "up" else 0
+        if s.alcohol.a < 0.5:
+            max_down_sober = max(max_down_sober, down_s)
+        prev_pose = f.pose
         if not (MARGIN - 1 <= f.x <= TABLE_W - MARGIN + 1 and MARGIN - 1 <= f.y <= TABLE_H - MARGIN + 1):
             out = True
         h = s.state["h"]
@@ -110,7 +118,8 @@ def run(args):
             "sesgo": float(abs(W.sum()) / max(np.abs(W).sum(), 1e-9)),
             "bloqueo_s": longest_still * DT, "fuera": out, "nan": nan, "sat": float(np.max(sat)),
             "ms_por_paso": (time.perf_counter() - t0) / (secs / DT) * 1000,
-            "memoria_kc_mbon": L._memory()}
+            "memoria_kc_mbon": L._memory(), "caidas_sin_alcohol": falls_sober,
+            "suelo_sin_alcohol_s": max_down_sober * DT}
 
 
 SCENARIOS = ["beer", "wine", "shot", "tequila", "garrafon", "mezcla", "etanol_0.3", "etanol_0.5",
@@ -132,7 +141,9 @@ if __name__ == "__main__":
                "fuera": sum(x["fuera"] for x in r), "nan": sum(x["nan"] for x in r),
                "sat_max": round(max(x["sat"] for x in r), 4),
                "ms_por_paso": round(float(np.mean([x["ms_por_paso"] for x in r])), 2),
-               "memoria_kc_mbon": round(max(x["memoria_kc_mbon"] for x in r), 3)}
+               "memoria_kc_mbon": round(max(x["memoria_kc_mbon"] for x in r), 3),
+               "caidas_sin_alcohol": sum(x["caidas_sin_alcohol"] for x in r),
+               "suelo_sin_alcohol_max_s": round(max(x["suelo_sin_alcohol_s"] for x in r), 1)}
         rows.append(row)
         print(json.dumps(row, ensure_ascii=False), flush=True)
     (ROOT / "artifacts" / "stress.json").write_text(json.dumps(rows, indent=1, ensure_ascii=False))

@@ -6,8 +6,8 @@
   tacto    antennal touch (walls) -> left / right antennal mechanosensory neurons
   vibración a knock on the table -> Johnston organ (JO-A/B)
   arousal  a constant tonic drive to the monoaminergic neurons, so the fly is awake (ARBITRARIO)
-  propiocepción  own walking speed -> leg proprioceptors (chordotonal, campaniform, hair plates),
-           only while standing on the ground; own turning -> haltere proprioceptors
+  propiocepción  own walking speed -> leg proprioceptors (chordotonal, campaniform, hair plates);
+           own turning -> haltere proprioceptors
   brújula  own heading -> E-PG neurons, as a bump over their protocerebral-bridge glomerulus
            (SIMPLIFICACIÓN: without vision the heading is injected there directly)
   hambre   gain of the sweet (up) and bitter (down) receptors (see gut.py; hormonal, not synaptic)
@@ -168,10 +168,11 @@ class Senses:
             u[self.vib] += I0 * obs["vib"]
         if obs.get("arousal", 0.0) > 0:
             u[self.arousal] += I0 * 0.5 * obs["arousal"]
-        vals = (obs["v"] if obs.get("ground", True) else None, obs["w"])
+        # leg proprioceptors (chordotonal organs sense leg movement, not only load) report always:
+        # when they went silent in the air or on the back, the leg motor neurons lost their tone and
+        # a sober fly that jumped never got up again
+        vals = (obs["v"], obs["w"])
         for pools, centers, val in zip(self.prop, self.prop_centers, vals):
-            if val is None:
-                continue                      # in the air the legs carry no load
             act = _bell(val, centers, 0.2)
             for k, idx in enumerate(pools):
                 if len(idx) and act[k] > 1e-3:

@@ -102,10 +102,11 @@ b { font-weight: 600; }
 .gauge { position: relative; height: 12px; border-radius: 999px; overflow: hidden; display: flex; background: #120e0b; }
 .gauge .z { height: 100%; opacity: .28; }
 .gauge .z1 { width: 15%; background: var(--z1); } .gauge .z2 { width: 45%; background: var(--z2); }
-.gauge .z3 { width: 10%; background: var(--z3); } .gauge .z4 { width: 30%; background: var(--z4); }
+.gauge .z3 { width: 10%; background: var(--z3); } .gauge .z4 { width: 18%; background: var(--z4); }
+.gauge .z5 { width: 12%; background: #7a3a8a; }
 .gauge i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 999px;
-  background: linear-gradient(90deg, var(--z1), var(--z2) 40%, var(--z3) 65%, var(--z4)); transition: width .3s; }
-.gauge-lab { display: grid; grid-template-columns: 15% 45% 10% 30%; font-size: 11px; color: var(--faint); margin-top: 4px; }
+  background: linear-gradient(90deg, var(--z1), var(--z2) 40%, var(--z3) 65%, var(--z4) 80%, #7a3a8a); transition: width .3s; }
+.gauge-lab { display: grid; grid-template-columns: 15% 45% 10% 18% 12%; font-size: 11px; color: var(--faint); margin-top: 4px; }
 .gauge-lab span:nth-child(3) { white-space: nowrap; }
 .chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
 .chip { background: var(--card-2); border-radius: 10px; padding: 8px 10px; display: grid; grid-template-columns: 1fr auto; row-gap: 1px; }

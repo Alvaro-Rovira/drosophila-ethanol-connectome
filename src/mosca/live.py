@@ -137,6 +137,14 @@ class Live:
         self.sim.tap(1.0)
         self.pending_fx.append("tap")
 
+    def help_up(self):
+        """'Darle la vuelta': puts a fallen fly back on its feet (nothing else)."""
+        if self.sim.world.fly.pose != "up":
+            self.sim.body.help_up()
+            self.sim.world.fly.pose = "up"
+            self.sim.bs["pose"] = "up"
+            self.pending_fx.append("helpup")
+
     def reset(self):
         """'Ducha fría': ethanol to zero. The neurons recover by themselves; the posture follows."""
         self.sim.alcohol.reset()
@@ -179,8 +187,12 @@ class Live:
                     d = self.drinks[kind]
                     self.toasts.append(f"Protocolo: {d['name'].lower()} ({round(d['abv'] * 100)} % alcohol)")
                 else:
-                    self.demo_queue.appendleft((self.demo_t + 3.0, kind))
-                    break
+                    # the bar is full: retry this drink later WITHOUT holding back what comes after it
+                    # (a blocked drink used to delay the vapour pulses behind it)
+                    items = sorted(list(self.demo_queue) + [(self.demo_t + 5.0, kind)])
+                    self.demo_queue = deque(items)
+                    if items[0][0] <= self.demo_t:
+                        break
             if not self.demo_queue:
                 self.toasts.append(self.ui["toasts"]["demo_off"])
         if self.debug_puddles:

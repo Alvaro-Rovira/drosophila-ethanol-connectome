@@ -219,3 +219,18 @@ def test_mushroom_body_learning_changes_only_kc_to_mbon():
     changed = np.where(br.A.data != before)[0]
     assert len(changed) > 0 and np.isin(changed, br.pl["idx"]).all()
     assert (br.A.data[changed] < before[changed]).all()
+
+
+def test_a_knock_makes_a_sober_fly_jump_but_not_fall():
+    """The legs carry no weight in the air, and their proprioceptors keep reporting: a sober fly
+    that jumped used to 'fall' in mid-air and never get up again."""
+    s = sim(94)
+    for _ in range(45):
+        s.step()
+    s.tap(1.0)
+    jumped = False
+    for _ in range(int(10 / DT)):
+        s.step()
+        jumped |= s.world.fly.z > 0.15
+        assert s.world.fly.pose == "up"
+    assert jumped
